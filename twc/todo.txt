@@ -1,0 +1,6 @@
+- Function pointers
+
+- Change units in output and input
+    - Add structs for every input/output to store their units
+
+- Do tests
