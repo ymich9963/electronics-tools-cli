@@ -32,24 +32,38 @@ int main(int argc, char** argv) {
         } 
 
         /* Output too few args error */ 
-        fprintf(stderr, "%s\n", TOO_FEW_ARGS_STR);
+        fprintf(stderr, "%s\n", FEW_ARGS_STR);
         exit(EXIT_FAILURE);
     }
 
+    /* Get the inputs and options */
     get_inputs(&argc, argv, &ip);
 
-    calc_external_layers(&ip, &op.extl);
-    calc_internal_layers(&ip, &op.intl);
+    switch (ip.standard) {
+        case IPC2221:
+            ipc2221_calcs(&ip, &op);
+            break;
+        case IPC2152:
+            ipc2152_calcs(&ip, &op);
+            break;
+        default:
+            fprintf(stderr, "Unknown standard inputted. Only acceptable values are '2221' and '2152'.`");
+            exit(EXIT_FAILURE);
+    }
 
-    if(ip.oflag) {
+    /* Open file to save outputs */
+    if(ip.ofile.oflag) {
         file = fopen(ip.ofile.dest, "w");
         if (!(file)) {
             fprintf(stderr, "File not able to be saved, check input.\n");
             exit(EXIT_FAILURE);
         }
     }
+
+    /* Output the results to the buffer */
     output_results(&ip, &op, file);
 
+    /* Close file and free memory */
     if (file != stdout) {
         fclose(file);
         printf("\nContents exported to %s\n\n", ip.ofile.dest);
@@ -57,53 +71,52 @@ int main(int argc, char** argv) {
         free(ip.ofile.fname);
         free(ip.ofile.dest);
     }
+
+    /* Program done. exit succesfully */
     exit(EXIT_SUCCESS);
 }
 
-
 void get_inputs(int* argc, char** argv, ip_t* ip) {
-    /* Check if only Current and Thickness were provided */
-    if (*argc == 3) {
-        ip->res = sscanf(argv[1], "%lf", &ip->val); 
-        check_res(&ip->res);
-        check_limits(&ip->val);
-        ip->current = ip->val;
-
-        ip->res = sscanf(argv[2], "%lf", &ip->val); 
-        check_res(&ip->res);
-        check_limits(&ip->val);
-        ip->trace_thickness = ip->val;
-        return;
-    }
+    unsigned char num_rec = 0; /* Used to record the two allowed numerical options */
+    bool skip_check = false; /* To skip the the type and limit check, only used by numerical options or string arguments */
 
     for(int i = 1; i < *argc; i++) {
+        if(!(skip_check)){
+            CHECK_RES(sscanf(argv[i + 1], "%lf", &ip->val));
+            CHECK_LIMITS(ip->val);
+        } else {
+            skip_check = false; /* Always make sure it's false for the next iteration */
+        }
+
         if (!(strcmp("-o", argv[i]))) {
-            ip->oflag = true;
-            set_output_file(&ip->ofile.fname, &ip->ofile.path, &ip->ofile.dest, argv[i + 1]);
+            ip->ofile.oflag = true;
+            set_output_file(&ip->ofile, argv[i + 1]);
+            i++;
+            skip_check = true;
+            continue;
+        }
+        if(!(strcmp("--standard", argv[i]))) {
+            ip->standard = ip->val;
             i++;
             continue;
-        } else {
-            ip->res = sscanf(argv[i + 1], "%lf", &ip->val); 
-            check_res(&ip->res);
-            check_limits(&ip->val);
         }
         if(!(strcmp("-c", argv[i])) || !(strcmp("--current", argv[i]))) {
             ip->current = ip->val;
             i++;
             continue;
         }
-        if(!(strcmp("-t", argv[i])) || !(strcmp("--trace-thickness", argv[i]))) {
-            ip->trace_thickness = ip->val;
+        if(!(strcmp("-w", argv[i])) || !(strcmp("--copper-weight", argv[i]))) {
+            ip->copper_weight = ip->val;
             i++;
             continue;
         }
-        if(!(strcmp("--trace-thickness-mil", argv[i]))) {
-            ip->trace_thickness = CONV_MIL_OZFT2(ip->val); // convert back to oz/ft^2 for the calculations to work
+        if(!(strcmp("--copper-weight-mil", argv[i]))) {
+            ip->copper_weight = CONV_MIL_OZFT2(ip->val); // convert back to oz/ft^2 for the calculations to work
             i++;
             continue;
         }
-        if(!(strcmp("--trace-thickness-mm", argv[i]))) {
-            ip->trace_thickness = CONV_MM_OZFT2(ip->val); // convert to mils and then back to oz/ft^2
+        if(!(strcmp("--copper-weight-mm", argv[i]))) {
+            ip->copper_weight = CONV_MM_OZFT2(ip->val); // convert to mils and then back to oz/ft^2
             i++;
             continue;
         }
@@ -134,66 +147,108 @@ void get_inputs(int* argc, char** argv, ip_t* ip) {
             i++;
             continue;
         }
+
+        /* Checks for the numerical options */
+        if(sscanf(argv[i], "%lf", &ip->val) && (num_rec == 0)) {
+            num_rec++;
+            skip_check = true;
+            ip->current = ip->val;
+            continue;
+        }
+        if((sscanf(argv[i], "%lf", &ip->val)) && (num_rec == 1)) {
+            num_rec++;
+            skip_check = true;
+            ip->copper_weight = ip->val;
+            continue;
+        }
+
+        /* Error checking */
         fprintf(stderr, "Unknown option '%s', exiting.", argv[i]);
         exit(EXIT_FAILURE);
     }
 }
 
 void set_default_inputs(ip_t* ip) {
+    ip->standard = IPC2152;
     ip->temperature_rise = 10; // [Celsius]
     ip->temperature_ambient = 25; // [Celsius]
-    ip->trace_length = -1; // [cm]
+    ip->trace_length = 0; // [cm]
     ip->resistivity = 1.7 * pow(10, -6); // resistivity of copper
     ip->a = 3.9 * pow(10, -3); // resistivity temperature coefficient for copper
     ip->val = 0;
     ip->res = 0;
-    ip->oflag = false;
+    ip->ofile.oflag = false;
     ip->ofile.path = "\0";
 }
 
-void check_res(int* res) {
-    if (*res != 1) {
+void check_res(int res) {
+    if (res != 1) {
         fprintf(stderr, "Argument entered was NaN...\n");
         exit(EXIT_FAILURE);
     }
     return;
 }
 
-void check_limits(double* val) {
-    if (*val > VAL_MAX || *val < VAL_MIN) {
-        fprintf(stderr, "Detected numbers out of range. Please check inputs and enter numbers between, \n%.15lf and %.15lf", VAL_MIN, VAL_MAX);
-        exit(EXIT_FAILURE);
-    }
-    return;
+void autogen_file_name(char* fname) {
+    strcpy(fname, "twc-output-"); 
+    strcat(fname, get_time()); 
+    strcat(fname, ".txt");
 }
 
-void autogen_file_name(char** fname) {
-    strcpy(*fname, "twc-output-"); 
-    strcat(*fname, get_time()); 
-    strcat(*fname, ".txt");
-}
-
-void set_output_file(char** fname, char** path, char** dest, char* optarg) {
-    *fname = malloc(sizeof(char) * OUT_FILE_MAX);
+void set_output_file(ofile_t* ofile, char* optarg) {
+    ofile->fname = malloc(sizeof(char) * OUT_FILE_MAX);
     if (*optarg == '.') {
-        autogen_file_name(fname);
+        autogen_file_name(ofile->fname);
     } else if (optarg[strlen(optarg) - 1] == '/') {
-        *path = malloc(sizeof(char) * PATH_MAX); // PATH_MAX = 260
-        sscanf(optarg, "%s", *path);
-        autogen_file_name(fname);
+        ofile->path = malloc(sizeof(char) * PATH_MAX); // PATH_MAX = 260
+        sscanf(optarg, "%s", ofile->path);
+        autogen_file_name(ofile->fname);
     } else {
-        sscanf(optarg, "%s", *fname);
+        sscanf(optarg, "%s", ofile->fname);
     }
-    *dest = malloc(sizeof(char) * (strlen(*path) + strlen(*fname)));
-    sprintf(*dest, "%s%s", *path, *fname);
+    ofile->dest = malloc(sizeof(char) * (strlen(ofile->path) + strlen(ofile->fname)));
+    sprintf(ofile->dest, "%s%s", ofile->path, ofile->fname);
 }
 
-double calc_area_mils2(ip_t* ip, float k) {
-    return ip->current/(pow(k * pow(ip->temperature_rise,b),1/c)); 
+void ipc2221_calcs(ip_t* ip, op_t* op) {
+    calc_external_layers(ip, &op->extl);
+    calc_internal_layers(ip, &op->intl);
+}
+
+void calc_external_layers(ip_t* ip, extl_t* extl) {
+    extl->area = calc_2221_area_mils2(ip, k_EXT);
+    calc_common(ip, extl);
+}
+
+void calc_internal_layers(ip_t* ip, intl_t* intl) {
+    intl->area = calc_2221_area_mils2(ip, k_INT);
+    calc_common(ip, intl);
+}
+
+double calc_2221_area_mils2(ip_t* ip, float k) {
+    return ip->current/(pow(k * pow(ip->temperature_rise, 0.44),1/0.725)); 
+}
+
+void ipc2152_calcs(ip_t* ip, op_t* op) {
+    op->layer.area = calc_2152_area_mils2(ip);
+    calc_common(ip, &op->layer);
+}
+
+double calc_2152_area_mils2(ip_t* ip) {
+    return (117.555 * pow(ip->temperature_rise, -0.913) + 1.15) * pow(ip->current, 0.84 * pow(ip->temperature_rise, -0.018) + 1.159); 
+}
+
+void calc_common(ip_t* ip, layer_t* layer) {
+    layer->trace_width = calc_width_mils(ip, &layer->area);
+    if (ip->trace_length > 0) {
+        layer->resistance  = calc_resistance(ip, &layer->area); 
+    }
+    layer->voltage_drop = calc_vdrop(ip, &layer->resistance); 
+    layer->power_loss = calc_power_loss(ip, &layer->voltage_drop);
 }
 
 double calc_width_mils(ip_t* ip, double* area) {
-    return *area/(ip->trace_thickness * 1.378);
+    return *area/(ip->copper_weight * 1.378);
 }
 
 double calc_resistance(ip_t* ip, double* area) {
@@ -208,26 +263,6 @@ double calc_power_loss(ip_t* ip, double* vdrop) {
     return ip->current * (*vdrop);
 }
 
-void calc_external_layers(ip_t* ip, extl_t* extl) {
-    extl->area = calc_area_mils2(ip, k_EXT);
-    extl->trace_width = calc_width_mils(ip, &extl->area);
-    if (ip->trace_length > 0) {
-        extl->resistance  = calc_resistance(ip, &extl->area); 
-    }
-    extl->voltage_drop = calc_vdrop(ip, &extl->resistance); 
-    extl->power_loss = calc_power_loss(ip, &extl->voltage_drop);
-}
-
-void calc_internal_layers(ip_t* ip, intl_t* intl) {
-    intl->area = calc_area_mils2(ip, k_INT);
-    intl->trace_width = calc_width_mils(ip, &intl->area);
-    if (ip->trace_length > 0) {
-        intl->resistance  = calc_resistance(ip, &intl->area); 
-    }
-    intl->voltage_drop = calc_vdrop(ip, &intl->resistance); 
-    intl->power_loss = calc_power_loss(ip, &intl->voltage_drop);
-}
-
 char* get_time() {
     time_t time_since_epoch = time(NULL);
     struct tm *tm = localtime(&time_since_epoch);
@@ -237,8 +272,9 @@ char* get_time() {
 }
 
 void output_help() {
-    printf("\nHelp for the Trace Width Calculator (TWC).t-c <Current [A]>\t\t= Input the trace current in Amps.\n"
-            "\n\t-t <Thickness [oz/ft^2]>\t= Input the thickness in oz per ft^2.\n"
+    printf("\nHelp for the Trace Width Calculator (TWC)."
+            "\n\t-c <Current [A]>\t\t= Input the trace current in Amps.\n"
+            "\n\t-w <Copper Weight [oz/ft^2]>\t= Input the copper weight in oz per ft^2.\n"
             "\n\t-r <Temperature Rise [C]>\t= Input the maximum allowed temperature rise in C.\n"
             "\n\t-a <Ambient Temperature [C]>\t= Input the ambient temperature of the trace in C.\n"
             "\n\t-l <Trace Length [cm]>\t\t= Input the trace length in centimeters.\n"
@@ -247,16 +283,20 @@ void output_help() {
 
 void output_results(ip_t* ip, op_t* op, FILE * file) {
 
-    fprintf(file,   "###Inputs###\n"
+    switch (ip->standard) {
+        case IPC2221: 
+            fprintf(file,   
+                    "###Inputs###\n"
                     "Current:\t\t%.15lf\t[A]\n"
-                    "Trace Thickness:\t%.15lf\t[oz/ft^2]\n"
+                    "Copper Weight:\t\t%.15lf\t[oz/ft^2]\n"
                     "Temperature Rise:\t%.15lf\t[C]\n"
                     "Temperature (Ambient):\t%.15lf\t[C]\n"
                     "Trace Length:\t\t%.15lf\t[cm]\n"
                     "###End of Inputs###\n\n", 
-                    ip->current, ip->trace_thickness, ip->temperature_rise, ip->temperature_ambient, ip->trace_length);
+                    ip->current, ip->copper_weight, ip->temperature_rise, ip->temperature_ambient, ip->trace_length);
 
-    fprintf(file,   "###Outputs###\n\n"
+            fprintf(file,   
+                    "###Outputs###\n\n"
                     "//External Layers\\\\\n"
                     "Width:\t\t\t%.15lf\t[mil]\n"
                     "Resistance:\t\t%.15lf\t[Ohm]\n"
@@ -265,7 +305,8 @@ void output_results(ip_t* ip, op_t* op, FILE * file) {
                     "\\\\\\\\\\\\\\\\\\/////////\n\n",
                     op->extl.trace_width, op->extl.resistance, op->extl.voltage_drop, op->extl.power_loss);
 
-    fprintf(file,   "//Internal Layers\\\\\n"
+            fprintf(file,   
+                    "//Internal Layers\\\\\n"
                     "Width:\t\t\t%.15lf\t[mil]\n"
                     "Resistance:\t\t%.15lf\t[Ohm]\n"
                     "Voltage Drop:\t\t%.15lf\t[V]\n"
@@ -274,15 +315,45 @@ void output_results(ip_t* ip, op_t* op, FILE * file) {
                     "###End of Outputs###\n\n",
                     op->intl.trace_width, op->intl.resistance, op->intl.voltage_drop, op->intl.power_loss);
 
-    fprintf(file,   "Notes:\n"
+            fprintf(file,   
+                    "Notes:\n"
                     "- Constants used for these calculations were,\n\n"
-                    "\tb = %.7lf\n"  
-                    "\tc = %.7lf\n"
                     "\tk = %.7lf (Internal layers)\n"
                     "\tk = %.7lf (External layers)\n"
                     "\ta = %.7lf (Resistivity Temperature Coefficient)\n"
                     "%6srho = %.7lf (Resistivity)\n\n"
                     "Values for b, c, and k were based on curve fitting to IPC-2221 curves (Revision A, pg. 38)\n"
                     "\n- Maximum trace temperature considered is %.7lf C\n\n",
-                    b, c, k_INT, k_EXT, ip->a, " " ,ip->resistivity, ip->temperature_rise + ip->temperature_ambient);
+                    k_INT, k_EXT, ip->a, " " ,ip->resistivity, ip->temperature_rise + ip->temperature_ambient);
+            break;
+        case IPC2152:
+
+            fprintf(file,
+                    "###Inputs###\n"
+                    "Current:\t\t%.15lf\t[A]\n"
+                    "Copper Weight:\t\t%.15lf\t[oz/ft^2]\n"
+                    "Temperature Rise:\t%.15lf\t[C]\n"
+                    "Temperature (Ambient):\t%.15lf\t[C]\n"
+                    "Trace Length:\t\t%.15lf\t[cm]\n"
+                    "###End of Inputs###\n\n", 
+                    ip->current, ip->copper_weight, ip->temperature_rise, ip->temperature_ambient, ip->trace_length);
+
+            fprintf(file,
+                    "###Outputs###\n\n"
+                    "Width:\t\t\t%.15lf\t[mil]\n"
+                    "Resistance:\t\t%.15lf\t[Ohm]\n"
+                    "Voltage Drop:\t\t%.15lf\t[V]\n"
+                    "Power Loss:\t\t%.15lf\t[W]\n",
+                    op->layer.trace_width, op->layer.resistance, op->layer.voltage_drop, op->layer.power_loss);
+
+            fprintf(file,
+                    "Notes:\n"
+                    "- Constants used for these calculations were,\n\n"
+                    "\ta = %.7lf (Resistivity Temperature Coefficient)\n"
+                    "%6srho = %.7lf (Resistivity)\n\n"
+                    "write source here"
+                    "\n- Maximum trace temperature considered is %.7lf C\n\n",
+                    ip->a, " " ,ip->resistivity, ip->temperature_rise + ip->temperature_ambient);
+            break;
+    }
 }
