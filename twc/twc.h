@@ -21,10 +21,13 @@
 #define VERSION_STR     "Trace Width Calculator (TWC)\n Version 1.0.0\n"
 
 /* Conversion macros */
-#define CONV_MIL2_CM2(x)    ((x) * 0.00254 * 0.00254)
-#define CONV_MIL_OZFT2(x)   ((x) / 1.378)
-#define CONV_MM_MIL(x)      ((x) * 39.37007874)
-#define CONV_MM_OZFT2(x)    (CONV_MIL_OZFT2(CONV_MM_MIL(x)))
+#define CONV_MIL2_TO_CM2(x)    ((x) * 0.00254 * 0.00254)
+#define CONV_MIL_TO_OZFT2(x)   ((x) / 1.37)                 // most sources say 1.37, few others say 1.378.
+#define CONV_OZFT2_TO_MIL(x)   ((x) * 1.37)
+#define CONV_MM_TO_MIL(x)      ((x) * 39.37007874)
+#define CONV_MIL_TO_MM(x)      ((x) * 0.0254)
+#define CONV_MM_TO_OZFT2(x)    (CONV_MIL_TO_OZFT2(CONV_MM_TO_MIL(x)))
+#define CONV_OZFT2_TO_MM(x)    (CONV_MIL_TO_MM(CONV_OZFT2_TO_MIL(x))) 
 
 /* Check macros */
 #define CHECK_RES(x)        ({ if (!(x)) { \
@@ -37,16 +40,16 @@
                             } }) 
 
 /* Outputs Structures */
+
 typedef struct Layer{
     double trace_width;         // [mils]
+    double corr_trace_width;
     double resistance;          // [Ohms]
     double voltage_drop;        // [V]
     double power_loss;          // [W]
     double trace_temperature;   // [Celsius]
     double area;                // [mils^2]
-    int correction_factors;      // TODO: correctoin factors
-    double universal_width;
-    double revised_width;
+    double corr_area;
 }layer_t;
 
 typedef layer_t extl_t;
@@ -72,6 +75,14 @@ typedef struct OP{
     save_t save_flag;
 }op_t;
 
+typedef struct CF {
+    double copper_weight;
+    double pcb_thickness;
+    double plane_area;
+    double plane_distance;
+    double temperature_rise;
+}cf_t; /* Correction Factors Struct */
+
 /* Input Structure */
 typedef struct IP{
     /* Mandatory Inputs */
@@ -88,6 +99,11 @@ typedef struct IP{
     double val;                 // Input value 
     int res;                    // Result
     ofile_t ofile;              // Output file properties
+    cf_t cf;                    // Correction Factors   
+    double pcb_thickness;
+    char* plane_yn;
+    double plane_area;
+    double plane_distance;
 }ip_t;
 
 void set_default_inputs(ip_t* ip);

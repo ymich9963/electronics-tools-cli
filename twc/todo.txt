@@ -4,3 +4,7 @@
     - Add structs for every input/output to store their units
 
 - Do tests
+
+- trace thickness = copper weight
+
+- use scientific %e in prints as an option
