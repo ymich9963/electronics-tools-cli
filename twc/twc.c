@@ -1,5 +1,4 @@
 #include "twc.h"
-#include <stdio.h>
 
 int main(int argc, char** argv) {
 
@@ -8,44 +7,23 @@ int main(int argc, char** argv) {
 
     /* Outputs */
     op_t op;
-
+    
     /* Other Vars */
     FILE * file = stdout;
 
+    /* Set default values to avoid any memory issues */
     set_default_inputs(&ip);
 
-    if(argc == 1) {
-        /* Output welcome string */
-        printf(WELCOME_STR);
-        exit(EXIT_SUCCESS);
-    }
-
-    if (argc == 2) {
-        /* Output help */
-        if (!(strcmp("-h", argv[1])) || !(strcmp("--help", argv[1]))) {
-            output_help();
-            exit(EXIT_SUCCESS);
-        } 
-        /* Output version */
-        if (!(strcmp("--version", argv[1]))) {
-            printf(VERSION_STR);
-            exit(EXIT_SUCCESS);
-        } 
-
-        /* Output too few args error */ 
-        fprintf(stderr, "%s\n", FEW_ARGS_STR);
-        exit(EXIT_FAILURE);
-    }
-
     /* Get the inputs and options */
-    get_inputs(&argc, argv, &ip);
+    get_options(&argc, argv, &ip);
 
+    /* Continue based on the standard */
     switch (ip.standard) {
         case IPC2221:
             ipc2221_calcs(&ip, &op);
             break;
         case IPC2152:
-            ipc2152_calcs(&ip, &op);
+            ipc2152_calcsA(&ip, &op);
             break;
         default:
             fprintf(stderr, "Unknown standard inputted. Only acceptable values are '2221' and '2152'.`");
@@ -77,11 +55,32 @@ int main(int argc, char** argv) {
     exit(EXIT_SUCCESS);
 }
 
-void get_inputs(int* argc, char** argv, ip_t* ip) {
+void get_options(int* argc, char** argv, ip_t* ip) {
     unsigned char num_rec = 0; /* Used to record the two allowed numerical options */
     bool skip_check = false; /* To skip the the type and limit check, only used by numerical options or string arguments */
 
+    if(*argc == 1) {
+        printf(WELCOME_STR);
+        exit(EXIT_SUCCESS);
+    }
+
     for(int i = 1; i < *argc; i++) {
+        /* Check these options before anything else */
+        if (!(strcmp("-h", argv[i])) || !(strcmp("--help", argv[i]))) {
+            output_help();
+            exit(EXIT_SUCCESS);
+        } 
+        if (!(strcmp("--version", argv[i]))) {
+            printf(VERSION_STR);
+            exit(EXIT_SUCCESS);
+        } 
+        /* Important to check when using the default numerical behaviour */
+        if (*argc == 2) {
+            fprintf(stderr, "%s\n", FEW_ARGS_STR);
+            exit(EXIT_FAILURE);
+        }
+
+        /* To skip the numerical checks for the argument */
         if(!(skip_check)){
             CHECK_RES(sscanf(argv[i + 1], "%lf", &ip->val));
             CHECK_LIMITS(ip->val);
@@ -89,7 +88,7 @@ void get_inputs(int* argc, char** argv, ip_t* ip) {
             skip_check = false; /* Always make sure it's false for the next iteration */
         }
 
-        if (!(strcmp("-o", argv[i]))) {
+        if (!(strcmp("-o", argv[i])) || !(strcmp("--output", argv[i]))) {
             ip->ofile.oflag = true;
             set_output_file(&ip->ofile, argv[i + 1]);
             i++;
@@ -166,6 +165,8 @@ void get_inputs(int* argc, char** argv, ip_t* ip) {
         fprintf(stderr, "Unknown option '%s', exiting.", argv[i]);
         exit(EXIT_FAILURE);
     }
+    /* Go over the inputs one more time to make sure no crazy output happens */
+    recheck_options(ip);
 }
 
 void set_default_inputs(ip_t* ip) {
@@ -192,12 +193,8 @@ void set_default_inputs(ip_t* ip) {
     ip->cf.plane_distance = 1;
 }
 
-void check_res(int res) {
-    if (res != 1) {
-        fprintf(stderr, "Argument entered was NaN...\n");
-        exit(EXIT_FAILURE);
-    }
-    return;
+void recheck_options(ip_t* ip) {
+    /* Mainly to check if all of the required inputs are used so that no crazy values are calculated */
 }
 
 void autogen_file_name(char* fname) {
@@ -221,36 +218,27 @@ void set_output_file(ofile_t* ofile, char* optarg) {
     sprintf(ofile->dest, "%s%s", ofile->path, ofile->fname);
 }
 
+double calc_2221_area_mils2(ip_t* ip, float k) {
+    return pow(ip->current/k * pow(ip->temperature_rise, 0.44), 1/0.725); 
+}
+
 void ipc2221_calcs(ip_t* ip, op_t* op) {
-    calc_external_layers(ip, &op->extl);
-    calc_internal_layers(ip, &op->intl);
+    op->extl.area = calc_2221_area_mils2(ip, k_EXT); 
+    calc_common(ip, &op->extl);
+    op->intl.area = calc_2221_area_mils2(ip, k_INT);
+    calc_common(ip, &op->intl);
 }
 
-void calc_external_layers(ip_t* ip, extl_t* extl) {
-    extl->area = calc_2221_area_mils2(ip, k_EXT);
-    calc_common(ip, extl);
-}
-
-void calc_internal_layers(ip_t* ip, intl_t* intl) {
-    intl->area = calc_2221_area_mils2(ip, k_INT);
-    calc_common(ip, intl);
-}
-
-double calc_2152_area_mils2(ip_t* ip) {
-    /* Different one on the website, and different one in the code */
+double calc_2152_areaA_mils2(ip_t* ip, double temperature_rise) {
+    /* Different one on the website, and different one in the website code */
+    return (110.515 * pow(temperature_rise, -0.871) + 0.803) * pow(ip->current, 0.868 * pow(temperature_rise, -0.102) + 1.129);    
     /* return (117.555 * pow(ip->temperature_rise, -0.913) + 1.15) * pow(ip->current, 0.84 * pow(ip->temperature_rise, -0.018) + 1.159);  */
-    return (110.515 * pow(ip->temperature_rise, -0.871) + 0.803) * pow(ip->current, 0.868 * pow(ip->temperature_rise, -0.102) + 1.129);    
 }
 
-double calc_2152_corr_area_mils2(ip_t* ip) {
-    /* Different one on the website, and different one in the code */
-    /* return (117.555 * pow(ip->cf.temperature_rise, -0.913) + 1.15) * pow(ip->current, 0.84 * pow(ip->temperature_rise, -0.018) + 1.159);  */
-    return (110.515 * pow(ip->cf.temperature_rise, -0.871) + 0.803) * pow(ip->current, 0.868 * pow(ip->cf.temperature_rise, -0.102) + 1.129);    
-}
+void ipc2152_calcsA(ip_t* ip, op_t* op) {
+    op->layer.area = calc_2152_areaA_mils2(ip, ip->temperature_rise);
 
-void ipc2152_calcs(ip_t* ip, op_t* op) {
-    op->layer.area = calc_2152_area_mils2(ip);
-
+    /* Copper weight correction factor */
     if (ip->copper_weight == 2) {
         ip->cf.copper_weight = -0.0185 * log(ip->current) + 0.9861;
     } else if (ip->copper_weight == 3) {
@@ -259,10 +247,12 @@ void ipc2152_calcs(ip_t* ip, op_t* op) {
         ip->cf.copper_weight = -0.0318 * log(ip->current) + 0.9128; 
     }
 
+    /* PCB thickness correction factor */
     if (ip->pcb_thickness != 0) {
         ip->cf.pcb_thickness = 25.959 * pow(ip->pcb_thickness,-0.7666);
     }
 
+    /* Plane area correction factor */
     if (ip->plane_area >= 40) {
         ip->cf.plane_area = 0.89;
     } else if (ip->plane_area >= 20) {
@@ -271,23 +261,31 @@ void ipc2152_calcs(ip_t* ip, op_t* op) {
         ip->cf.plane_area = 1;
     } 
 
+    /* Plane distance correction factor */
     if (ip->plane_distance > 125) {
         ip->cf.plane_distance = 1;
     } else if (ip->cf.plane_distance != 1){
         ip->cf.plane_distance = 0.0031 * ip->plane_distance + 0.4054;
     }
 
+    /* Calculate the corrected temperature rise */
     ip->cf.temperature_rise = ip->temperature_rise / (ip->cf.copper_weight * ip->cf.pcb_thickness * ip->cf.plane_distance * ip->cf.plane_area);
 
     /* Calculate the corrected area and trace width  */
-    op->layer.corr_area = calc_2152_corr_area_mils2(ip);
+    op->layer.corr_area = calc_2152_areaA_mils2(ip, ip->cf.temperature_rise);
     op->layer.corr_trace_width = calc_width_mils(ip, &op->layer.corr_area);
 
     calc_common(ip, &op->layer);
 }
 
-double calc_2221_area_mils2(ip_t* ip, float k) {
-    return pow(ip->current/k * pow(ip->temperature_rise, 0.44), 1/0.725); 
+double calc_2152_areaB_mils2(ip_t* ip) {
+    return pow(ip->current/(0.089710902134 * pow(ip->temperature_rise, 0.39379253898)), 1/(0.50382053698 * pow(ip->temperature_rise, 0.038495772461))); // * 0.0254 * 0.0254;
+}
+
+void ipc2152_calcsB(ip_t* ip, op_t* op) {
+    op->layer.area = calc_2152_areaB_mils2(ip); 
+
+
 }
 
 void calc_common(ip_t* ip, layer_t* layer) {

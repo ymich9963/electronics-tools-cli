@@ -16,12 +16,13 @@
 #define OUT_FILE_MAX    30
 #define IPC2152         2152
 #define IPC2221         2221
-#define WELCOME_STR     "\nTrace Width Calculator, Made by Yiannis Michael (2024). \n\nPlease 'type twc.exe <Current [A]> <Thickness [oz/ft^2]>' to get output results. Use '--help' for explanation of the flags and more advanced usage, for different units, optional inputs, etc.\n"
-#define FEW_ARGS_STR    "\nAn input of at least Current [A] and Thickness [oz/ft^2] is required. Use no arguments to get the welcome message and either '-h' or '--help' to get the list of commands.\n"
+#define WELCOME_STR     "\nTrace Width Calculator, Made by Yiannis Michael (2024). \n\nPlease 'type twc.exe <Current [A]> <Copper Weight [oz/ft^2]>' to get output results. Use '--help' for explanation of the flags and more advanced usage, for different units, optional inputs, etc.\n\nThis tool should only be used to assist design decisions and not be used to replace professional advice. Developer(s) have no liability whatsoever."
+#define FEW_ARGS_STR    "\nAn input of at least Current [A] and Copper Weight [oz/ft^2] is required. Use no arguments to get the welcome message and either '-h' or '--help' to get the list of commands.\n"
 #define VERSION_STR     "Trace Width Calculator (TWC)\n Version 1.0.0\n"
 
 /* Conversion macros */
 #define CONV_MIL2_TO_CM2(x)    ((x) * 0.00254 * 0.00254)
+#define CONV_MIL2_TO_MM2(x)    ((x) * 0.0254 * 0.0254)
 #define CONV_MIL_TO_OZFT2(x)   ((x) / 1.37)                 // most sources say 1.37, few others say 1.378.
 #define CONV_OZFT2_TO_MIL(x)   ((x) * 1.37)
 #define CONV_MM_TO_MIL(x)      ((x) * 39.37007874)
@@ -40,16 +41,15 @@
                             } }) 
 
 /* Outputs Structures */
-
 typedef struct Layer{
     double trace_width;         // [mils]
-    double corr_trace_width;
     double resistance;          // [Ohms]
     double voltage_drop;        // [V]
     double power_loss;          // [W]
     double trace_temperature;   // [Celsius]
     double area;                // [mils^2]
-    double corr_area;
+    double corr_area;           // [mils^2]
+    double corr_trace_width;    // [mils]
 }layer_t;
 
 typedef layer_t extl_t;
@@ -100,29 +100,26 @@ typedef struct IP{
     int res;                    // Result
     ofile_t ofile;              // Output file properties
     cf_t cf;                    // Correction Factors   
-    double pcb_thickness;
-    char* plane_yn;
-    double plane_area;
-    double plane_distance;
+    double pcb_thickness;       // PCB Thickness
+    float pcb_thermal_cond;     // PCB Thermal Conductivity
+    double plane_area;          // Plane Area
+    double plane_distance;      // Plane Distance 
 }ip_t;
 
 void set_default_inputs(ip_t* ip);
-void check_res(int res);
-void check_limits(double* val);
-void get_inputs(int* argc, char** argv, ip_t* ip);
+void get_options(int* argc, char** argv, ip_t* ip);
+void recheck_options(ip_t* ip);
 void set_output_file(ofile_t* ofile, char* optarg);
 void autogen_file_name(char* fname);
 char* get_time();
 void ipc2221_calcs(ip_t* ip, op_t* op);
-void ipc2152_calcs(ip_t* ip, op_t* op);
+void ipc2152_calcsA(ip_t* ip, op_t* op);
 void calc_common(ip_t* ip, layer_t* layer);
 double calc_2221_area_mils2(ip_t* ip, float k);
-double calc_2152_area_mils2(ip_t* ip);
+double calc_2152_areaA_mils2(ip_t* ip, double temperature_rise);
 double calc_width_mils(ip_t* ip, double* area);
 double calc_resistance(ip_t* ip, double* area);
 double calc_vdrop(ip_t* ip, double* resistance);
 double calc_power_loss(ip_t* ip, double* vdrop);
-void calc_external_layers(ip_t* ip, extl_t* extl);
-void calc_internal_layers(ip_t* ip, intl_t* intl);
 void output_results(ip_t* ip, op_t* op, FILE * file);
 void output_help();

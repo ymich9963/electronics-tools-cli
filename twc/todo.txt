@@ -8,3 +8,7 @@
 - trace thickness = copper weight
 
 - use scientific %e in prints as an option
+
+- create help for each option?
+
+- check outputs/inputs so that current and cw must always be inputted
