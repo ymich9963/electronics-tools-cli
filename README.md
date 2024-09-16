@@ -1,5 +1,7 @@
-# Electronics Tools CLI
+# elecli: Electronics Tools CLI
 FOSS CLI tool for a variety of tools used in electronics design.
+
+Still very much in development.
 
 ## Contents
 `twc` - Trace Width Calculator, using IPC-2512 and IPC-2221. Calculate the trace widths for the required current in the trace.

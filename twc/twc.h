@@ -23,12 +23,15 @@
 /* Conversion macros */
 #define CONV_MIL2_TO_CM2(x)    ((x) * 0.00254 * 0.00254)
 #define CONV_MIL2_TO_MM2(x)    ((x) * 0.0254 * 0.0254)
-#define CONV_MIL_TO_OZFT2(x)   ((x) / 1.37)                 // most sources say 1.37, few others say 1.378.
+#define CONV_CM2_TO_INCH2(x)   ((x) * 2.54 * 2.54)
+#define CONV_MIL_TO_OZFT2(x)   ((x) / 1.37) // most sources say 1.37, few others say 1.378.
+#define CONV_MM_TO_OZFT2(x)    ((x) * 39.37007874 / 1.37)
+#define CONV_UM_TO_OZFT2(x)    ((x) * 39.37007874 / 1.37 * 10e-3)
 #define CONV_OZFT2_TO_MIL(x)   ((x) * 1.37)
+#define CONV_OZFT2_TO_MM(x)    ((x) * 1.37 * 0.0254) 
 #define CONV_MM_TO_MIL(x)      ((x) * 39.37007874)
 #define CONV_MIL_TO_MM(x)      ((x) * 0.0254)
-#define CONV_MM_TO_OZFT2(x)    (CONV_MIL_TO_OZFT2(CONV_MM_TO_MIL(x)))
-#define CONV_OZFT2_TO_MM(x)    (CONV_MIL_TO_MM(CONV_OZFT2_TO_MIL(x))) 
+#define CONV_FAHR_TO_CELS(x)   (((x) - 32) / 1.8)
 
 /* Check macros */
 #define CHECK_RES(x)        ({ if (!(x)) { \
@@ -81,6 +84,7 @@ typedef struct CF {
     double plane_area;
     double plane_distance;
     double temperature_rise;
+    float pcb_thermal_cond;     
 }cf_t; /* Correction Factors Struct */
 
 /* Input Structure */
@@ -95,15 +99,15 @@ typedef struct IP{
     double temperature_ambient; // [Celsius]
     double trace_length;        // [cm]
     double resistivity;         // [Ohm*cm]
+    double pcb_thickness;       // [mm]
+    double pcb_thermal_cond;    // [W/mK]
+    double plane_area;          // [in^2] 
+    double plane_distance;      // [mils] 
     double a;                   // [1/C] :resistivity temperature coefficient
-    double val;                 // Input value 
-    int res;                    // Result
-    ofile_t ofile;              // Output file properties
     cf_t cf;                    // Correction Factors   
-    double pcb_thickness;       // PCB Thickness
-    float pcb_thermal_cond;     // PCB Thermal Conductivity
-    double plane_area;          // Plane Area
-    double plane_distance;      // Plane Distance 
+    double val;                 // Input value 
+    int res;                    // Check Result
+    ofile_t ofile;              // Output file properties
 }ip_t;
 
 void set_default_inputs(ip_t* ip);
@@ -113,7 +117,9 @@ void set_output_file(ofile_t* ofile, char* optarg);
 void autogen_file_name(char* fname);
 char* get_time();
 void ipc2221_calcs(ip_t* ip, op_t* op);
+void ipc2152_calcs(ip_t* ip, op_t* op);
 void ipc2152_calcsA(ip_t* ip, op_t* op);
+void ipc2152_calcsB(ip_t* ip, op_t* op);
 void calc_common(ip_t* ip, layer_t* layer);
 double calc_2221_area_mils2(ip_t* ip, float k);
 double calc_2152_areaA_mils2(ip_t* ip, double temperature_rise);

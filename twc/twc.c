@@ -7,8 +7,8 @@ int main(int argc, char** argv) {
 
     /* Outputs */
     op_t op;
-    
-    /* Other Vars */
+
+    /* Output stream */
     FILE * file = stdout;
 
     /* Set default values to avoid any memory issues */
@@ -17,13 +17,18 @@ int main(int argc, char** argv) {
     /* Get the inputs and options */
     get_options(&argc, argv, &ip);
 
+    /* Have a function that sets all the functions to be used as struct members. Definitely one function for calculations and one for output. Have a variable for method too?  */
+
     /* Continue based on the standard */
     switch (ip.standard) {
         case IPC2221:
             ipc2221_calcs(&ip, &op);
             break;
         case IPC2152:
-            ipc2152_calcsA(&ip, &op);
+            /* Have an enum to choose between A or B, a function pointer array will point to the correct funcitons to use. Also have an enum to relate the function names to the index */
+            /* ipc2152_calcs(&ip, &op); */
+            /* ipc2152_calcsA(&ip, &op); */
+            ipc2152_calcsB(&ip, &op);
             break;
         default:
             fprintf(stderr, "Unknown standard inputted. Only acceptable values are '2221' and '2152'.`");
@@ -105,6 +110,11 @@ void get_options(int* argc, char** argv, ip_t* ip) {
             i++;
             continue;
         }
+        if(!strcmp("--current-mA", argv[i])) {
+            ip->current = 10e-3 * ip->val;
+            i++;
+            continue;
+        }
         if(!(strcmp("-w", argv[i])) || !(strcmp("--copper-weight", argv[i]))) {
             ip->copper_weight = ip->val;
             i++;
@@ -116,13 +126,22 @@ void get_options(int* argc, char** argv, ip_t* ip) {
             continue;
         }
         if(!(strcmp("--copper-weight-mm", argv[i]))) {
-            ip->copper_weight = CONV_MM_TO_OZFT2(ip->val); // convert to mils and then back to oz/ft^2
+            ip->copper_weight = CONV_MM_TO_OZFT2(ip->val); 
+            i++;
+            continue;
+        }
+        if(!(strcmp("--copper-weight-um", argv[i]))) {
+            ip->copper_weight = CONV_UM_TO_OZFT2(ip->val); 
             i++;
             continue;
         }
         if(!(strcmp("-r", argv[i])) || !(strcmp("--temperature-rise", argv[i]))) {
-            sscanf(argv[i + 1], "%lf", &ip->temperature_rise);
             ip->temperature_rise = ip->val;
+            i++;
+            continue;
+        }
+        if(!(strcmp("--temperature-rise-F", argv[i]))) {
+            ip->temperature_rise = CONV_FAHR_TO_CELS(ip->val);
             i++;
             continue;
         }
@@ -131,8 +150,23 @@ void get_options(int* argc, char** argv, ip_t* ip) {
             i++;
             continue;
         }
+        if(!(strcmp("--temperature-ambient-F", argv[i]))) {
+            ip->temperature_ambient = CONV_FAHR_TO_CELS(ip->val);
+            i++;
+            continue;
+        }
         if(!(strcmp("-l", argv[i])) || !(strcmp("--trace-length", argv[i]))) {
             ip->trace_length = ip->val;
+            i++;
+            continue;
+        }
+        if(!(strcmp("--trace-length-mm", argv[i]))) {
+            ip->trace_length = 10e-1 * ip->val;
+            i++;
+            continue;
+        }
+        if(!(strcmp("--trace-length-mil", argv[i]))) {
+            ip->trace_length = CONV_MIL_TO_MM(10e-1 * ip->val);
             i++;
             continue;
         }
@@ -143,6 +177,41 @@ void get_options(int* argc, char** argv, ip_t* ip) {
         }
         if(!(strcmp("--resistivity-temperature-coefficient", argv[i]))) {
             ip->a = ip->val;
+            i++;
+            continue;
+        }
+        if(!(strcmp("-t", argv[i])) || !(strcmp("--pcb-thickness", argv[i]))) {
+            ip->pcb_thickness = ip->val;
+            i++;
+            continue;
+        }
+        if(!(strcmp("--pcb-thickness-mm", argv[i]))) {
+            ip->trace_length = CONV_MM_TO_MIL(ip->val);
+            i++;
+            continue;
+        }
+        if(!(strcmp("-e", argv[i])) || !(strcmp("--pcb-thermal-conductivity", argv[i]))) {
+            ip->pcb_thermal_cond = ip->val;
+            i++;
+            continue;
+        }
+        if(!(strcmp("-p", argv[i])) || !(strcmp("--plane-area", argv[i]))) {
+            ip->plane_area = ip->val;
+            i++;
+            continue;
+        }
+        if(!(strcmp("--plane-area-cm2", argv[i]))) {
+            ip->trace_length = CONV_CM2_TO_INCH2(ip->val);
+            i++;
+            continue;
+        }
+        if(!(strcmp("-d", argv[i])) || !(strcmp("--plane-distance", argv[i]))) {
+            ip->plane_distance = ip->val;
+            i++;
+            continue;
+        }
+        if(!(strcmp("--plane-distance-mm", argv[i]))) {
+            ip->trace_length = CONV_MM_TO_MIL(ip->val);
             i++;
             continue;
         }
@@ -172,18 +241,20 @@ void get_options(int* argc, char** argv, ip_t* ip) {
 void set_default_inputs(ip_t* ip) {
     /* Set input value defaults */
     ip->standard = IPC2152;
-    ip->temperature_rise = 10; // [Celsius]
-    ip->temperature_ambient = 25; // [Celsius]
-    ip->trace_length = 0; // [cm]
-    ip->resistivity = 1.7e-6; // resistivity of copper
-    ip->a = 3.9e-3; // resistivity temperature coefficient for copper
-    ip->val = 0;
-    ip->res = 0;
-    ip->ofile.oflag = false;
+    ip->temperature_rise = 10;      
+    ip->temperature_ambient = 25;   
+    ip->trace_length = 0;           
+    ip->resistivity = 1.7e-6;       // resistivity of copper
+    ip->a = 3.9e-3;                 // resistivity temperature coefficient for copper
+    ip->val = 0;                    
+    ip->res = 0;                    
+    ip->ofile.oflag = false;        
     ip->ofile.path = "\0";
     ip->pcb_thickness = 0;
     ip->plane_area = 0;
     ip->plane_distance = 0;
+    ip->pcb_thermal_cond = 0.20;
+    ip->pcb_thickness = 1.6;
 
     /* Set modifier defaults */
     ip->cf.copper_weight = 1;
@@ -191,6 +262,7 @@ void set_default_inputs(ip_t* ip) {
     ip->cf.plane_area = 1;
     ip->cf.pcb_thickness = 1;
     ip->cf.plane_distance = 1;
+    ip->cf.pcb_thermal_cond = 1;
 }
 
 void recheck_options(ip_t* ip) {
@@ -229,6 +301,11 @@ void ipc2221_calcs(ip_t* ip, op_t* op) {
     calc_common(ip, &op->intl);
 }
 
+void ipc2152_calcs(ip_t *ip, op_t *op) {
+    ipc2152_calcsA(ip, op);
+    ipc2152_calcsB(ip, op);
+}
+
 double calc_2152_areaA_mils2(ip_t* ip, double temperature_rise) {
     /* Different one on the website, and different one in the website code */
     return (110.515 * pow(temperature_rise, -0.871) + 0.803) * pow(ip->current, 0.868 * pow(temperature_rise, -0.102) + 1.129);    
@@ -259,12 +336,12 @@ void ipc2152_calcsA(ip_t* ip, op_t* op) {
         ip->cf.plane_area = 0.94;
     } else {
         ip->cf.plane_area = 1;
-    } 
+    } // Plane Area in inch^2 but must be >=20 for it to be modified? sus...
 
     /* Plane distance correction factor */
     if (ip->plane_distance > 125) {
         ip->cf.plane_distance = 1;
-    } else if (ip->cf.plane_distance != 1){
+    } else {
         ip->cf.plane_distance = 0.0031 * ip->plane_distance + 0.4054;
     }
 
@@ -285,7 +362,39 @@ double calc_2152_areaB_mils2(ip_t* ip) {
 void ipc2152_calcsB(ip_t* ip, op_t* op) {
     op->layer.area = calc_2152_areaB_mils2(ip); 
 
+    /* Coefficients array */
+    double coeff_arr[6][4] = {
+        {0.98453567795,     -0.22281787548,     0.20061423196,      -0.041541116264},
+        {-0.01657194921,     0.00017520059279, -0.0050615234096,     0.002281483634},
+        {0.00088711317661,   0.0013631745743,  -0.0002237330971,    -0.00010974218613},
+        {-66729255031e-16,  -0.00014976736827,  58082340133e-15,    -24728159584e-16},
+        {-7.9576264561e-7,   55788354958e-16,  -24912026388e-16,     2.4000295954e-7},
+        {1.6619678738e-8,   -7.1122635445e-8,   3.3800191741e-8,    -3.9797591878e-9}
+    };
 
+    for(int i = 0; i < 6; i++) {
+        for(int c = 0; c < 4; c++) {
+            /* Copper weight here must be in oz/ft2 */
+            ip->cf.copper_weight += coeff_arr[i][c] * pow(ip->copper_weight, c) * pow(ip->current, i); 
+        }
+    }
+
+    /* PCB Thickness must be in mil */
+    ip->cf.pcb_thickness = 24.929779905 * pow(ip->pcb_thickness, -0.75501997929);
+
+    /* Plane Distance must be in mil */
+    ip->cf.plane_distance = 0.0031298662911 * ip->plane_distance + 0.40450883823;
+
+    /* PCB Thermal Conductivity must be in BTU/h*ft*F */
+    ip->cf.pcb_thermal_cond = -1.4210148167 * ip->pcb_thermal_cond + 1.1958174134;
+
+    /* Corrected area */
+    op->layer.corr_area = op->layer.area * ip->cf.copper_weight * ip->cf.pcb_thickness * ip->cf.plane_distance * ip->cf.pcb_thermal_cond;
+
+    /* Corrected Trace Width */
+    op->layer.corr_trace_width = op->layer.corr_area / ip->copper_weight;
+
+    calc_common(ip, &op->layer);
 }
 
 void calc_common(ip_t* ip, layer_t* layer) {
@@ -298,7 +407,7 @@ void calc_common(ip_t* ip, layer_t* layer) {
 }
 
 double calc_width_mils(ip_t* ip, double* area) {
-    return *area/(ip->copper_weight * 1.378);
+    return *area/(ip->copper_weight * 1.37);
 }
 
 double calc_resistance(ip_t* ip, double* area) {
@@ -392,8 +501,12 @@ void output_results(ip_t* ip, op_t* op, FILE * file) {
                     "Temperature Rise:\t%.15lf\t[C]\n"
                     "Temperature (Ambient):\t%.15lf\t[C]\n"
                     "Trace Length:\t\t%.15lf\t[cm]\n"
+                    "PCB Thickness:\t\t%.15lf\t[mil]\n"
+                    "PCB Thermal Cond. CF:\t%.15lf\t[W/mK]\n" // only in method B
+                    "Plane Distance:\t\t%.15lf\t[mil]\n"
+                    "Plane Area:\t\t%.15lf\t[in^2]\n" // only in method A
                     "### End of Inputs ###\n\n", 
-                    ip->current, ip->copper_weight, ip->temperature_rise, ip->temperature_ambient, ip->trace_length);
+                    ip->current, ip->copper_weight, ip->temperature_rise, ip->temperature_ambient, ip->trace_length, ip->pcb_thickness, ip->pcb_thermal_cond, ip->plane_distance, ip->plane_area);
 
             fprintf(file,
                     "### Outputs ###"
@@ -413,11 +526,12 @@ void output_results(ip_t* ip, op_t* op, FILE * file) {
                     "\n"
                     "Copper Weight CF:\t%.15lf\t[units]\n"
                     "PCB Thickness CF:\t%.15lf\t[units]\n"
-                    "Plane Area CF:\t\t%.15lf\t[units]\n"
+                    "PCB Thermal Cond. CF:\t%.15lf\t[units]\n" // only in method B
+                    "Plane Area CF:\t\t%.15lf\t[units]\n" // only in method A
                     "Plane Distance CF:\t%.15lf\t[units]\n"
-                    "Temperature Rise CF:\t%.15lf\t[units]\n"
+                    "Temperature Rise CF:\t%.15lf\t[units]\n" // only in method A
                     "### End of Correction Factors ###\n\n",
-                    ip->cf.copper_weight, ip->cf.pcb_thickness, ip->cf.plane_area, ip->cf.plane_distance,ip->cf.temperature_rise);
+                    ip->cf.copper_weight, ip->cf.pcb_thickness, ip->cf.pcb_thermal_cond, ip->cf.plane_area, ip->cf.plane_distance,ip->cf.temperature_rise);
 
             fprintf(file,
                     "Notes:\n"
@@ -428,7 +542,7 @@ void output_results(ip_t* ip, op_t* op, FILE * file) {
                     "\n- Maximum trace temperature considered is %.7lf C\n\n",
                     ip->a, " " ,ip->resistivity, ip->temperature_rise + ip->temperature_ambient);
             break;
-            fprintf(file, 
-                    "Design assistance by the TWC tool is provided with no liability whatsover. For final decisions on electronics designs, please consult your boss");
     }
+    fprintf(file, 
+            "\nDesign assistance by the TWC tool is provided with no liability whatsover. For final decisions on electronics designs, please consult your boss\n");
 }
