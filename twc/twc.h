@@ -14,11 +14,10 @@
 #define VAL_MAX         999999999.999999999 
 #define VAL_MIN         DBL_MIN
 #define OUT_FILE_MAX    30
-#define IPC2152         2152
-#define IPC2221         2221
 #define WELCOME_STR     "\nTrace Width Calculator, Made by Yiannis Michael (2024). \n\nPlease 'type twc.exe <Current [A]> <Copper Weight [oz/ft^2]>' to get output results. Use '--help' for explanation of the flags and more advanced usage, for different units, optional inputs, etc.\n\nThis tool should only be used to assist design decisions and not be used to replace professional advice. Developer(s) have no liability whatsoever."
 #define FEW_ARGS_STR    "\nAn input of at least Current [A] and Copper Weight [oz/ft^2] is required. Use no arguments to get the welcome message and either '-h' or '--help' to get the list of commands.\n"
 #define VERSION_STR     "Trace Width Calculator (TWC)\n Version 1.0.0\n"
+#define DISCLAIMER_STR  "\nDesign assistance by the TWC tool is provided with no liability whatsover. For final decisions on electronics designs, please consult an actual qualified person.\n"
 
 /* Conversion macros */
 #define CONV_MIL2_TO_CM2(x)    ((x) * 0.00254 * 0.00254)
@@ -35,13 +34,13 @@
 
 /* Check macros */
 #define CHECK_RES(x)        ({ if (!(x)) { \
-                                fprintf(stderr, "Argument entered was NaN...\n"); \
-                                exit(EXIT_FAILURE); \
-                            } }) 
+        fprintf(stderr, "Argument entered was NaN...\n"); \
+        exit(EXIT_FAILURE); \
+        } }) 
 #define CHECK_LIMITS(x)     ({ if ((x) > VAL_MAX || (x) < VAL_MIN) { \
-                                fprintf(stderr, "Detected numbers out of range. Please check inputs and enter numbers between, \n%.15lf and %.15lf", VAL_MIN, VAL_MAX); \
-                                exit(EXIT_FAILURE); \
-                            } }) 
+        fprintf(stderr, "Detected numbers out of range. Please check inputs and enter numbers between, \n%.15lf and %.15lf", VAL_MIN, VAL_MAX); \
+        exit(EXIT_FAILURE); \
+        } }) 
 
 /* Outputs Structures */
 typedef struct Layer{
@@ -84,42 +83,77 @@ typedef struct CF {
     double plane_area;
     double plane_distance;
     double temperature_rise;
-    float pcb_thermal_cond;     
+    double pcb_thermal_cond;     
 }cf_t; /* Correction Factors Struct */
+
+typedef struct Dbl {
+    double val;
+    char* units;
+    void (*check)(double);
+}dbl_t;
+
+typedef struct Int {
+    int val;
+    char* units;
+    void (*check)(int);
+}int_t;
+
+typedef struct Str{
+    int val;
+    char* units;
+    void (*check)(int);
+}str_t;
+
+typedef struct Std {
+    char* str;
+    unsigned int num;
+}std_t;
+
+typedef struct IP ip_t;
 
 /* Input Structure */
 typedef struct IP{
     /* Mandatory Inputs */
-    double current;             // [A]
-    double copper_weight;       // [oz/ft^2]
+    dbl_t current;             // [A]
+    dbl_t copper_weight;       // [oz/ft^2]
 
     /* Optional Inputs */
-    int standard;               // IPC standard
-    double temperature_rise;    // [Celsius]
-    double temperature_ambient; // [Celsius]
-    double trace_length;        // [cm]
-    double resistivity;         // [Ohm*cm]
-    double pcb_thickness;       // [mm]
-    double pcb_thermal_cond;    // [W/mK]
-    double plane_area;          // [in^2] 
-    double plane_distance;      // [mils] 
-    double a;                   // [1/C] :resistivity temperature coefficient
+    std_t standard;             // IPC standard
+    char method;                // Method to use for calculations
+    dbl_t temperature_rise;     // [Celsius]
+    dbl_t temperature_ambient;  // [Celsius]
+    dbl_t trace_length;         // [cm]
+    dbl_t resistivity;          // [Ohm*cm]
+    dbl_t pcb_thickness;        // [mm]
+    dbl_t pcb_thermal_cond;     // [W/mK]
+    dbl_t plane_area;           // [in^2] 
+    dbl_t plane_distance;       // [mils] 
+    dbl_t a;                    // [1/C] :resistivity temperature coefficient
     cf_t cf;                    // Correction Factors   
     double val;                 // Input value 
-    int res;                    // Check Result
+    unsigned char res;          // Check Result
     ofile_t ofile;              // Output file properties
+    void (*proc)(ip_t*, op_t*); // Calculation procedure
+    void (*outp)(ip_t*, op_t*, FILE *file); // Output function
 }ip_t;
 
-void set_default_inputs(ip_t* ip);
+enum {
+    IPC2152 = 2152,
+    IPC2221 = 2221,
+}; /* Standards Enumeration */
+
 void get_options(int* argc, char** argv, ip_t* ip);
+void calculate_values(ip_t* ip,op_t* op);
+void set_default_inputs(ip_t* ip);
+void sel_proc_outp(ip_t* ip);
 void recheck_options(ip_t* ip);
 void set_output_file(ofile_t* ofile, char* optarg);
 void autogen_file_name(char* fname);
 char* get_time();
 void ipc2221_calcs(ip_t* ip, op_t* op);
 void ipc2152_calcs(ip_t* ip, op_t* op);
-void ipc2152_calcsA(ip_t* ip, op_t* op);
-void ipc2152_calcsB(ip_t* ip, op_t* op);
+void ipc2152_methodA(ip_t* ip, op_t* op);
+void ipc2152_methodB(ip_t* ip, op_t* op);
 void calc_common(ip_t* ip, layer_t* layer);
 double calc_2221_area_mils2(ip_t* ip, float k);
 double calc_2152_areaA_mils2(ip_t* ip, double temperature_rise);
@@ -127,5 +161,7 @@ double calc_width_mils(ip_t* ip, double* area);
 double calc_resistance(ip_t* ip, double* area);
 double calc_vdrop(ip_t* ip, double* resistance);
 double calc_power_loss(ip_t* ip, double* vdrop);
-void output_results(ip_t* ip, op_t* op, FILE * file);
+void output_results_2221(ip_t* ip, op_t* op, FILE * file);
+void output_results_2152_A(ip_t* ip, op_t* op, FILE * file);
+void output_results_2152_B(ip_t* ip, op_t* op, FILE * file);
 void output_help();
