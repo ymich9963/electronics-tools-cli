@@ -17,7 +17,7 @@
 #define WELCOME_STR     "\nTrace Width Calculator, Made by Yiannis Michael (2024). \n\nPlease 'type twc.exe <Current [A]> <Copper Weight [oz/ft^2]>' to get output results. Use '--help' for explanation of the flags and more advanced usage, for different units, optional inputs, etc.\n\nThis tool should only be used to assist design decisions and not be used to replace professional advice. Developer(s) have no liability whatsoever."
 #define FEW_ARGS_STR    "\nAn input of at least Current [A] and Copper Weight [oz/ft^2] is required. Use no arguments to get the welcome message and either '-h' or '--help' to get the list of commands.\n"
 #define VERSION_STR     "Trace Width Calculator (TWC)\n Version 1.0.0\n"
-#define DISCLAIMER_STR  "\nDesign assistance by the TWC tool is provided with no liability whatsover. For final decisions on electronics designs, please consult an actual qualified person.\n"
+#define DISCLAIMER_STR  "\nDesign assistance by the TWC tool is provided with no liability whatsover. For final decisions on electronics designs, please consult an actual qualified person.\n\n"
 
 /* Conversion macros */
 #define CONV_MIL2_TO_CM2(x)    ((x) * 0.00254 * 0.00254)
@@ -31,6 +31,7 @@
 #define CONV_MM_TO_MIL(x)      ((x) * 39.37007874)
 #define CONV_MIL_TO_MM(x)      ((x) * 0.0254)
 #define CONV_FAHR_TO_CELS(x)   (((x) - 32) / 1.8)
+#define CONV_WmK_TO_BTUhftF(x) ((x) / 1.73)
 
 /* Check macros */
 #define CHECK_RES(x)        ({ if (!(x)) { \
@@ -88,6 +89,7 @@ typedef struct CF {
 
 typedef struct Dbl {
     double val;
+    double outval;
     char* units;
     void (*check)(double);
 }dbl_t;
@@ -146,17 +148,13 @@ void get_options(int* argc, char** argv, ip_t* ip);
 void calculate_values(ip_t* ip,op_t* op);
 void set_default_inputs(ip_t* ip);
 void sel_proc_outp(ip_t* ip);
-void recheck_options(ip_t* ip);
 void set_output_file(ofile_t* ofile, char* optarg);
 void autogen_file_name(char* fname);
 char* get_time();
 void ipc2221_calcs(ip_t* ip, op_t* op);
-void ipc2152_calcs(ip_t* ip, op_t* op);
-void ipc2152_methodA(ip_t* ip, op_t* op);
-void ipc2152_methodB(ip_t* ip, op_t* op);
-void calc_common(ip_t* ip, layer_t* layer);
-double calc_2221_area_mils2(ip_t* ip, float k);
-double calc_2152_areaA_mils2(ip_t* ip, double temperature_rise);
+void ipc2152_calcsA(ip_t* ip, op_t* op);
+void ipc2152_calcsB(ip_t* ip, op_t* op);
+void calc_rvp(ip_t* ip, layer_t* layer);
 double calc_width_mils(ip_t* ip, double* area);
 double calc_resistance(ip_t* ip, double* area);
 double calc_vdrop(ip_t* ip, double* resistance);

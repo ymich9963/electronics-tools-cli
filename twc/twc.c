@@ -1,9 +1,7 @@
-// TODO: Function pointers, make one for each input for the expected functions
-// TODO: Change units in output and input. Add structs for every input/output to store their units
+// TODO: Change units in outputs.
 // TODO: Check the standard and method options first and then initialise the corresponding default vars. Have a function pointer for the default inputs
+// TODO: Check functions for each input
 // TODO: Create help for each option?
-// TODO: Check outputs/inputs so that current and cw must always be inputted
-// TODO: Add automatic unit change to outputs, i.e. if <0.001 then * 1000 and add mili
 
 #include "twc.h"
 
@@ -111,80 +109,142 @@ void get_options(int* argc, char** argv, ip_t* ip) {
             continue;
         }
         if(!(strcmp("-c", argv[i])) || !(strcmp("--current", argv[i]))) {
+            ip->current.outval = ip->val;
             ip->current.val = ip->val;
             ip->current.units = "A";
             i++;
             continue;
         }
         if(!strcmp("--current-mA", argv[i])) {
+            ip->current.outval = ip->val;
             ip->current.val = 10e-3 * ip->val;
             ip->current.units = "mA";
             i++;
             continue;
         }
         if(!(strcmp("-w", argv[i])) || !(strcmp("--copper-weight", argv[i]))) {
+            ip->copper_weight.outval = ip->val;
             ip->copper_weight.val = ip->val;
-            ip->copper_weight.units = "oz/ft2";
+            ip->copper_weight.units = "oz/ft^2";
             i++;
             continue;
         }
         if(!(strcmp("--copper-weight-mil", argv[i]))) {
+            ip->copper_weight.outval = ip->val;
             ip->copper_weight.val = CONV_MIL_TO_OZFT2(ip->val); // convert back to oz/ft^2 for the calculations to work
             ip->copper_weight.units = "mil";
             i++;
             continue;
         }
         if(!(strcmp("--copper-weight-mm", argv[i]))) {
+            ip->copper_weight.outval = ip->val;
             ip->copper_weight.val = CONV_MM_TO_OZFT2(ip->val); 
             ip->copper_weight.units = "mm";
             i++;
             continue;
         }
         if(!(strcmp("--copper-weight-um", argv[i]))) {
+            ip->copper_weight.outval = ip->val;
             ip->copper_weight.val = CONV_UM_TO_OZFT2(ip->val); 
             ip->copper_weight.units = "um";
             i++;
             continue;
         }
         if(!(strcmp("-r", argv[i])) || !(strcmp("--temperature-rise", argv[i]))) {
+            ip->temperature_rise.outval = ip->val;
             ip->temperature_rise.val = ip->val;
             ip->temperature_rise.units = "C";
             i++;
             continue;
         }
         if(!(strcmp("--temperature-rise-F", argv[i]))) {
+            ip->temperature_rise.outval = ip->val;
             ip->temperature_rise.val = CONV_FAHR_TO_CELS(ip->val);
             ip->temperature_rise.units = "F";
             i++;
             continue;
         }
         if(!(strcmp("-a", argv[i])) || !(strcmp("--temperature-ambient", argv[i]))) {
+            ip->temperature_ambient.outval = ip->val;
             ip->temperature_ambient.val = ip->val;
             ip->temperature_ambient.units = "C";
             i++;
             continue;
         }
         if(!(strcmp("--temperature-ambient-F", argv[i]))) {
+            ip->temperature_ambient.outval = ip->val;
             ip->temperature_ambient.val = CONV_FAHR_TO_CELS(ip->val);
             ip->temperature_ambient.units = "F";
             i++;
             continue;
         }
         if(!(strcmp("-l", argv[i])) || !(strcmp("--trace-length", argv[i]))) {
+            ip->trace_length.outval = ip->val;
             ip->trace_length.val = ip->val;
             ip->trace_length.units = "cm";
             i++;
             continue;
         }
         if(!(strcmp("--trace-length-mm", argv[i]))) {
+            ip->trace_length.outval = ip->val;
             ip->trace_length.val = 10e-1 * ip->val;
             ip->trace_length.units = "mm";
             i++;
             continue;
         }
         if(!(strcmp("--trace-length-mil", argv[i]))) {
+            ip->trace_length.outval = ip->val;
             ip->trace_length.val = CONV_MIL_TO_MM(10e-1 * ip->val);
             ip->trace_length.units = "mil";
+            i++;
+            continue;
+        }
+        if(!(strcmp("-t", argv[i])) || !(strcmp("--pcb-thickness", argv[i]))) {
+            ip->pcb_thickness.outval = ip->val;
+            ip->pcb_thickness.val = ip->val;
+            ip->pcb_thickness.units = "mil";
+            i++;
+            continue;
+        }
+        if(!(strcmp("--pcb-thickness-mm", argv[i]))) {
+            ip->pcb_thickness.outval = ip->val;
+            ip->pcb_thickness.val = CONV_MM_TO_MIL(ip->val);
+            ip->pcb_thickness.units = "mm";
+            i++;
+            continue;
+        }
+        if(!(strcmp("-e", argv[i])) || !(strcmp("--pcb-thermal-conductivity", argv[i]))) {
+            ip->pcb_thermal_cond.outval = ip->val;
+            ip->pcb_thermal_cond.val = CONV_WmK_TO_BTUhftF(ip->val);
+            ip->pcb_thermal_cond.units = "W/mK";
+            i++;
+            continue;
+        }
+        if(!(strcmp("-p", argv[i])) || !(strcmp("--plane-area", argv[i]))) {
+            ip->plane_area.outval = ip->val;
+            ip->plane_area.val = ip->val;
+            ip->plane_area.units = "in^2";
+            i++;
+            continue;
+        }
+        if(!(strcmp("--plane-area-cm2", argv[i]))) {
+            ip->plane_area.outval = ip->val;
+            ip->plane_area.val = CONV_CM2_TO_INCH2(ip->val);
+            ip->plane_area.units = "cm^2";
+            i++;
+            continue;
+        }
+        if(!(strcmp("-d", argv[i])) || !(strcmp("--plane-distance", argv[i]))) {
+            ip->plane_distance.outval = ip->val;
+            ip->plane_distance.val = ip->val;
+            ip->plane_distance.units = "mil";
+            i++;
+            continue;
+        }
+        if(!(strcmp("--plane-distance-mm", argv[i]))) {
+            ip->plane_distance.outval = ip->val;
+            ip->plane_distance.val = CONV_MM_TO_MIL(ip->val);
+            ip->plane_distance.units = "mm";
             i++;
             continue;
         }
@@ -193,50 +253,8 @@ void get_options(int* argc, char** argv, ip_t* ip) {
             i++;
             continue;
         }
-        if(!(strcmp("--resistivity-temperature-coefficient", argv[i]))) {
+        if(!(strcmp("--temperature-coefficient", argv[i]))) {
             ip->a.val = ip->val;
-            i++;
-            continue;
-        }
-        if(!(strcmp("-t", argv[i])) || !(strcmp("--pcb-thickness", argv[i]))) {
-            ip->pcb_thickness.val = ip->val;
-            ip->pcb_thickness.units = "mm";
-            i++;
-            continue;
-        }
-        if(!(strcmp("--pcb-thickness-mm", argv[i]))) {
-            ip->trace_length.val = CONV_MM_TO_MIL(ip->val);
-            ip->pcb_thickness.units = "mil";
-            i++;
-            continue;
-        }
-        if(!(strcmp("-e", argv[i])) || !(strcmp("--pcb-thermal-conductivity", argv[i]))) {
-            ip->pcb_thermal_cond.val = ip->val;
-            ip->pcb_thermal_cond.units = "W/mK";
-            i++;
-            continue;
-        }
-        if(!(strcmp("-p", argv[i])) || !(strcmp("--plane-area", argv[i]))) {
-            ip->plane_area.val = ip->val;
-            ip->plane_area.units = "in2";
-            i++;
-            continue;
-        }
-        if(!(strcmp("--plane-area-cm2", argv[i]))) {
-            ip->plane_area.val = CONV_CM2_TO_INCH2(ip->val);
-            ip->plane_area.units = "cm2";
-            i++;
-            continue;
-        }
-        if(!(strcmp("-d", argv[i])) || !(strcmp("--plane-distance", argv[i]))) {
-            ip->plane_distance.val = ip->val;
-            ip->plane_distance.units = "mil";
-            i++;
-            continue;
-        }
-        if(!(strcmp("--plane-distance-mm", argv[i]))) {
-            ip->plane_distance.val = CONV_MM_TO_MIL(ip->val);
-            ip->plane_distance.units = "mm";
             i++;
             continue;
         }
@@ -245,6 +263,7 @@ void get_options(int* argc, char** argv, ip_t* ip) {
         if(sscanf(argv[i], "%lf", &ip->val) && (num_rec == 0)) {
             num_rec++;
             skip_check = true;
+            ip->current.outval = ip->val;
             ip->current.val = ip->val;
             ip->current.units = "A";
             continue;
@@ -252,8 +271,9 @@ void get_options(int* argc, char** argv, ip_t* ip) {
         if((sscanf(argv[i], "%lf", &ip->val)) && (num_rec == 1)) {
             num_rec++;
             skip_check = true;
+            ip->copper_weight.outval = ip->val;
             ip->copper_weight.val = ip->val;
-            ip->copper_weight.units = "oz/ft2";
+            ip->copper_weight.units = "oz/ft^2";
             continue;
         }
 
@@ -262,38 +282,67 @@ void get_options(int* argc, char** argv, ip_t* ip) {
         exit(EXIT_FAILURE);
     }
     /* Go over the inputs one more time to make sure no crazy output happens */
-    recheck_options(ip);
+    if((ip->current.val == 0) || ip->copper_weight.val == 0) {
+        fprintf(stderr, "\nPlease input at least the Current and the Copper Weight.\n");
+    }
 }
 
 void set_default_inputs(ip_t* ip) {
     /* Set input value defaults */
     ip->standard.num = IPC2152;
     ip->method = 'B';
+
+    ip->current.outval = 0;      
+    ip->current.val = 0;      
+    ip->current.units = "A";      
+
+    ip->copper_weight.outval = 0;      
+    ip->copper_weight.val = 0;      
+    ip->copper_weight.units = "oz/ft^2";      
+
+    ip->temperature_rise.outval = 10;      
     ip->temperature_rise.val = 10;      
+    ip->temperature_rise.units = "C";      
+
+    ip->temperature_ambient.outval = 25;   
     ip->temperature_ambient.val = 25;   
+    ip->temperature_ambient.units = "C";   
+
+    ip->trace_length.outval = 0;           
     ip->trace_length.val = 0;           
-    ip->resistivity.val = 1.7e-6;       // resistivity of copper
-    ip->a.val = 3.9e-3;                 // resistivity temperature coefficient for copper
+    ip->trace_length.units = "cm";           
+
+    ip->plane_area.outval = 0;
+    ip->plane_area.val = 0;
+    ip->plane_area.units = "in^2"; 
+
+    ip->plane_distance.outval = 0;
+    ip->plane_distance.val = 0;
+    ip->plane_distance.units = "mil"; 
+
+    ip->pcb_thermal_cond.outval = 0.20;
+    ip->pcb_thermal_cond.val = CONV_WmK_TO_BTUhftF(0.20);
+    ip->pcb_thermal_cond.units = "W/mK"; 
+
+    ip->pcb_thickness.outval = 62;
+    ip->pcb_thickness.val = 62;
+    ip->pcb_thickness.units = "mil"; 
+
+    ip->resistivity.val = 1.724e-6;
+    ip->a.val = 3.93e-3;
+
     ip->val = 0;                    
     ip->res = 0;                    
+    
     ip->ofile.oflag = false;        
     ip->ofile.path = "\0";
-    ip->plane_area.val = 0;
-    ip->plane_distance.val = 0;
-    ip->pcb_thermal_cond.val = 0.20;
-    ip->pcb_thickness.val = 62;
 
     /* Set modifier defaults */
-    ip->cf.copper_weight = 1;
     ip->cf.temperature_rise = 1;
     ip->cf.plane_area = 1;
     ip->cf.pcb_thickness = 1;
     ip->cf.plane_distance = 1;
     ip->cf.pcb_thermal_cond = 1;
-}
-
-void recheck_options(ip_t* ip) {
-    /* Mainly to check if all of the required inputs are used so that no crazy values are calculated */
 }
 
 void sel_proc_outp(ip_t* ip) {
@@ -313,11 +362,11 @@ void sel_proc_outp(ip_t* ip) {
         case IPC2152:
             switch (ip->method) {
                 case 'A':
-                    ip->proc = &ipc2152_methodA; 
+                    ip->proc = &ipc2152_calcsA; 
                     ip->outp = &output_results_2152_A; 
                     break;
                 case 'B':
-                    ip->proc = &ipc2152_methodB; 
+                    ip->proc = &ipc2152_calcsB; 
                     ip->outp = &output_results_2152_B; 
                     break;
                 default:
@@ -353,25 +402,17 @@ void set_output_file(ofile_t* ofile, char* optarg) {
     sprintf(ofile->dest, "%s%s", ofile->path, ofile->fname);
 }
 
-double calc_2221_area_mils2(ip_t* ip, float k) {
-    return pow(ip->current.val/k * pow(ip->temperature_rise.val, 0.44), 1/0.725); 
-}
-
 void ipc2221_calcs(ip_t* ip, op_t* op) {
-    op->extl.area = calc_2221_area_mils2(ip, k_EXT); 
-    calc_common(ip, &op->extl);
-    op->intl.area = calc_2221_area_mils2(ip, k_INT);
-    calc_common(ip, &op->intl);
+    op->extl.area = pow(ip->current.val/k_EXT * pow(ip->temperature_rise.val, 0.44), 1/0.725); 
+    calc_rvp(ip, &op->extl);
+    op->intl.area = pow(ip->current.val/k_INT * pow(ip->temperature_rise.val, 0.44), 1/0.725); 
+    calc_rvp(ip, &op->intl);
 }
 
-double calc_2152_areaA_mils2(ip_t* ip, double temperature_rise) {
+void ipc2152_calcsA(ip_t* ip, op_t* op) {
     /* Different one on the website, and different one in the website code */
-    return (110.515 * pow(temperature_rise, -0.871) + 0.803) * pow(ip->current.val, 0.868 * pow(temperature_rise, -0.102) + 1.129);    
-    /* return (117.555 * pow(ip->temperature_rise, -0.913) + 1.15) * pow(ip->current, 0.84 * pow(ip->temperature_rise, -0.018) + 1.159);  */
-}
-
-void ipc2152_methodA(ip_t* ip, op_t* op) {
-    op->layer.area = calc_2152_areaA_mils2(ip, ip->temperature_rise.val);
+    op->layer.area = (110.515 * pow(ip->temperature_rise.val, -0.871) + 0.803) * pow(ip->current.val, 0.868 * pow(ip->temperature_rise.val, -0.102) + 1.129);    
+    /* op->layer.area = (117.555 * pow(ip->temperature_rise.val, -0.913) + 1.15) * pow(ip->current.val, 0.84 * pow(ip->temperature_rise.val, -0.018) + 1.159);  */
 
     /* Copper weight correction factor */
     if (ip->copper_weight.val == 2) {
@@ -410,15 +451,12 @@ void ipc2152_methodA(ip_t* ip, op_t* op) {
     op->layer.corr_area = calc_2152_areaA_mils2(ip, ip->cf.temperature_rise);
     op->layer.corr_trace_width = calc_width_mils(ip, &op->layer.corr_area);
 
-    calc_common(ip, &op->layer);
+    calc_rvp(ip, &op->layer);
 }
 
-double calc_2152_areaB_mils2(ip_t* ip) {
-    return pow(ip->current.val/(0.089710902134 * pow(ip->temperature_rise.val, 0.39379253898)), 1/(0.50382053698 * pow(ip->temperature_rise.val, 0.038495772461))); // * 0.0254 * 0.0254;
-}
+void ipc2152_calcsB(ip_t* ip, op_t* op) {
+    op->layer.area = pow(ip->current.val/(0.089710902134 * pow(ip->temperature_rise.val, 0.39379253898)), 1/(0.50382053698 * pow(ip->temperature_rise.val, 0.038495772461)));
 
-void ipc2152_methodB(ip_t* ip, op_t* op) {
-    op->layer.area = calc_2152_areaB_mils2(ip); 
 
     /* Coefficients array */
     double coeff_arr[6][4] = {
@@ -430,7 +468,6 @@ void ipc2152_methodB(ip_t* ip, op_t* op) {
         {1.6619678738e-8,   -7.1122635445e-8,   3.3800191741e-8,    -3.9797591878e-9}
     };
 
-    // FIX: Copper weight en lathos koumpare
     for(int i = 0; i < 6; i++) {
         for(int c = 0; c < 4; c++) {
             /* Copper weight here must be in oz/ft2 */
@@ -455,10 +492,10 @@ void ipc2152_methodB(ip_t* ip, op_t* op) {
     /* Corrected Trace Width */
     op->layer.corr_trace_width = op->layer.corr_area / ip->copper_weight.val;
 
-    calc_common(ip, &op->layer);
+    calc_rvp(ip, &op->layer);
 }
 
-void calc_common(ip_t* ip, layer_t* layer) {
+void calc_rvp(ip_t* ip, layer_t* layer) {
     layer->trace_width = calc_width_mils(ip, &layer->area);
     if (ip->trace_length.val > 0) {
         layer->resistance  = calc_resistance(ip, &layer->area); 
@@ -491,26 +528,16 @@ char* get_time() {
     return s;
 }
 
-void output_help() {
-    printf("\nHelp for the Trace Width Calculator (TWC)."
-            "\n\t-c <Current [A]>\t\t= Input the trace current in Amps.\n"
-            "\n\t-w <Copper Weight [oz/ft^2]>\t= Input the copper weight in oz per ft^2.\n"
-            "\n\t-r <Temperature Rise [C]>\t= Input the maximum allowed temperature rise in C.\n"
-            "\n\t-a <Ambient Temperature [C]>\t= Input the ambient temperature of the trace in C.\n"
-            "\n\t-l <Trace Length [cm]>\t\t= Input the trace length in centimeters.\n"
-            "\n\t-o <File Name>\t\t\t= Write the name of the outputted file. Use '.txt' to create a text file. Use a single '.' to auto-generate the name based on date/time. Can also write the full path to the file, e.g. 'C:/Users/user/output.txt' or stop at 'C:/Users/user/' to use the auto-generated file name.\n");
-}
-
 void output_results_2221(ip_t* ip, op_t* op, FILE * file) {
 
     fprintf(file,   
             "\n"
-            "Current:\t\t%.15lf\t[A]\n"
-            "Copper Weight:\t\t%.15lf\t[oz/ft^2]\n"
-            "Temperature Rise:\t%.15lf\t[C]\n"
-            "Temperature (Ambient):\t%.15lf\t[C]\n"
-            "Trace Length:\t\t%.15lf\t[cm]\n",
-            ip->current.val, ip->copper_weight.val, ip->temperature_rise.val, ip->temperature_ambient.val, ip->trace_length.val);
+            "Current:\t\t%.15lf\t[%s]\n"
+            "Copper Weight:\t\t%.15lf\t[%s]\n"
+            "Temperature, Rise:\t%.15lf\t[%s]\n"
+            "Temperature, Ambient:\t%.15lf\t[%s]\n"
+            "Trace Length:\t\t%.15lf\t[%s]\n",
+            ip->current.outval, ip->current.units, ip->copper_weight.outval, ip->copper_weight.units, ip->temperature_rise.outval, ip->temperature_rise.units, ip->temperature_ambient.val, ip->temperature_ambient.units, ip->trace_length.outval, ip->trace_length.units);
 
     fprintf(file,   
             "\n\n"
@@ -545,18 +572,21 @@ void output_results_2221(ip_t* ip, op_t* op, FILE * file) {
     fprintf(file, 
             "=====================\n\n");
 
-    fprintf(file, ip->trace_length.val == 0 ? "\n- Use trace length with '-l' to get voltage, resistance and power calculations.\n" : "\r");
+    fprintf(file,
+            "\nValues of k used in calculating the area:"
+            "\tk = %.7lf (Internal layers)\n"
+            "\tk = %.7lf (External layers)\n",
+            k_INT, k_EXT);
+
+    fprintf(file, ip->trace_length.val == 0 ? 
+            "\n- Use trace length with '-l' to get voltage, resistance and power calculations.\n" : 
+            "\n- Constants used for the P/I/V calculations were,\n\n"
+            "\ta = %.7lf (Temperature Coefficient)\n"
+            "%6srho = %.7lf (Resistivity)\n",
+            ip->a.val, " " ,ip->resistivity.val); 
 
     fprintf(file,   
-            "\n- Constants used for these calculations were,\n\n"
-            "\tk = %.7lf (Internal layers)\n"
-            "\tk = %.7lf (External layers)\n"
-            "\ta = %.7lf (Resistivity Temperature Coefficient)\n"
-            "%6srho = %.7lf (Resistivity)\n"
-            "\n- Values used for calculations were based on curve fitting to the IPC-2221 curves (Revision A, pg. 38)\n"
-            "\n- Method was derived from http://circuitcalculator.com/wordpress/2006/01/31/pcb-trace-width-calculator/\n"
-            "\n- Maximum trace temperature considered is %.7lf C\n",
-            k_INT, k_EXT, ip->a.val, " " ,ip->resistivity.val, ip->temperature_rise.val + ip->temperature_ambient.val);
+            "\n- Constants and method used were derived from http://circuitcalculator.com/wordpress/2006/03/12/pcb-via-calculator/.\n");
 
     fprintf(file, DISCLAIMER_STR);
 }
@@ -564,14 +594,14 @@ void output_results_2221(ip_t* ip, op_t* op, FILE * file) {
 void output_results_2152_A(ip_t* ip, op_t *op, FILE *file) {
     fprintf(file,
             "\n"
-            "Current:\t\t%.15lf\t[A]\n"
-            "Copper Weight:\t\t%.15lf\t[oz/ft^2]\n"
-            "Temperature Rise:\t%.15lf\t[C]\n"
-            "Trace Length:\t\t%.15lf\t[cm]\n"
-            "PCB Thickness:\t\t%.15lf\t[mil]\n"
-            "Plane Distance:\t\t%.15lf\t[mil]\n"
-            "Plane Area:\t\t%.15lf\t[in^2]\n", 
-            ip->current.val, ip->copper_weight.val, ip->temperature_rise.val, ip->trace_length.val, ip->pcb_thickness.val, ip->plane_distance.val, ip->plane_area.val);
+            "Current:\t\t%.15lf\t[%s]\n"
+            "Copper Weight:\t\t%.15lf\t[%s]\n"
+            "Temperature, Rise:\t%.15lf\t[%s]\n"
+            "Trace Length:\t\t%.15lf\t[%s]\n"
+            "PCB Thickness:\t\t%.15lf\t[%s]\n"
+            "Plane Distance:\t\t%.15lf\t[%s]\n"
+            "Plane Area:\t\t%.15lf\t[%s]\n", 
+            ip->current.outval, ip->current.units, ip->copper_weight.outval, ip->copper_weight.units, ip->temperature_rise.outval, ip->temperature_rise.units, ip->trace_length.outval, ip->trace_length.units, ip->pcb_thickness.outval, ip->pcb_thickness.units, ip->plane_distance.outval, ip->plane_distance.units, ip->plane_area.outval, ip->plane_area.units);
 
     fprintf(file,
             "\n"
@@ -580,7 +610,7 @@ void output_results_2152_A(ip_t* ip, op_t *op, FILE *file) {
             "Width:\t\t\t%.15lf\t[mil]\n"
             "Corrected Width: \t%.15lf\t[mil]\n",
             op->layer.area, op->layer.corr_area, op->layer.trace_width, op->layer.corr_trace_width);
-    
+
     fprintf(file,
             ip->trace_length.val > 0 ? 
             "Resistance:\t\t%.15lf\t[Ohm]\n"
@@ -597,7 +627,12 @@ void output_results_2152_A(ip_t* ip, op_t *op, FILE *file) {
             "Temperature Rise CF:\t%.15lf\t[units]\n",
             ip->cf.copper_weight, ip->cf.pcb_thickness, ip->cf.plane_area, ip->cf.plane_distance,ip->cf.temperature_rise);
 
-    fprintf(file, ip->trace_length.val == 0 ? "\n- Use trace length with '-l' to get voltage, resistance and power calculations.\n" : "\r");
+    fprintf(file, ip->trace_length.val == 0 ? 
+            "\n- Use trace length with '-l' to get voltage, resistance and power calculations.\n" : 
+            "\n- Constants used for the P/I/V calculations were,\n\n"
+            "\ta = %.7lf (Temperature Coefficient)\n"
+            "%6srho = %.7lf (Resistivity)\n",
+            ip->a.val, " " ,ip->resistivity.val); 
 
     fprintf(file,   
             "\n- Constants and method used were derived from https://www.smps.us/pcb-calculator.html.\n");
@@ -609,25 +644,29 @@ void output_results_2152_A(ip_t* ip, op_t *op, FILE *file) {
 void output_results_2152_B(ip_t* ip, op_t *op, FILE *file) {
     fprintf(file,
             "\n"
-            "Current:\t\t%.15lf\t[A]\n"
-            "Copper Weight:\t\t%.15lf\t[oz/ft^2]\n"
-            "Temperature Rise:\t%.15lf\t[C]\n"
-            "Trace Length:\t\t%.15lf\t[cm]\n"
-            "PCB Thickness:\t\t%.15lf\t[mil]\n"
-            "PCB Thermal Cond.:\t%.15lf\t[W/mK]\n"
-            "Plane Distance:\t\t%.15lf\t[mil]\n",
-            ip->current.val, ip->copper_weight.val, ip->temperature_rise.val, ip->trace_length.val, ip->pcb_thickness.val, ip->pcb_thermal_cond.val, ip->plane_distance.val);
+            "Current:\t\t%.15lf\t[%s]\n"
+            "Copper Weight:\t\t%.15lf\t[%s]\n"
+            "Temperature, Rise:\t%.15lf\t[%s]\n"
+            "Trace Length:\t\t%.15lf\t[%s]\n"
+            "PCB Thickness:\t\t%.15lf\t[%s]\n"
+            "Plane Distance:\t\t%.15lf\t[%s]\n"
+            "PCB Thermal Cond.:\t%.15lf\t[%s]\n",
+            ip->current.outval, ip->current.units, ip->copper_weight.outval, ip->copper_weight.units, ip->temperature_rise.outval, ip->temperature_rise.units, ip->trace_length.outval, ip->trace_length.units, ip->pcb_thickness.outval, ip->pcb_thickness.units, ip->plane_distance.outval, ip->plane_distance.units, ip->pcb_thermal_cond.outval, ip->pcb_thermal_cond.units);
 
     fprintf(file,
             "\n"
             "Area: \t\t\t%.15lf\t[mil^2]\n"
             "Corrected Area: \t%.15lf\t[mil^2]\n"
             "Width:\t\t\t%.15lf\t[mil]\n"
-            "Corrected Width: \t%.15lf\t[mil]\n"
+            "Corrected Width: \t%.15lf\t[mil]\n",
+            op->layer.area, op->layer.corr_area, op->layer.trace_width, op->layer.corr_trace_width);
+
+    fprintf(file,
+            ip->trace_length.val > 0 ? 
             "Resistance:\t\t%.15lf\t[Ohm]\n"
             "Voltage Drop:\t\t%.15lf\t[V]\n"
-            "Power Loss:\t\t%.15lf\t[W]\n",
-            op->layer.area, op->layer.corr_area, op->layer.trace_width, op->layer.corr_trace_width, op->layer.resistance, op->layer.voltage_drop, op->layer.power_loss);
+            "Power Loss:\t\t%.15lf\t[W]\n" : "\r",
+            op->layer.resistance, op->layer.voltage_drop, op->layer.power_loss);
 
     fprintf(file, 
             "\n"
@@ -637,14 +676,43 @@ void output_results_2152_B(ip_t* ip, op_t *op, FILE *file) {
             "Plane Distance CF:\t%.15lf\t[units]\n",
             ip->cf.copper_weight, ip->cf.pcb_thickness, ip->cf.pcb_thermal_cond, ip->cf.plane_distance);
 
-    fprintf(file,
-            "\n"
-            "Notes:\n"
-            "- Constants used for these calculations were,\n\n"
-            "\ta = %.7lf (Resistivity Temperature Coefficient)\n"
-            "%6srho = %.7lf (Resistivity)\n\n"
-            "write source here",
+    fprintf(file, ip->trace_length.val == 0 ? 
+            "\n- Use trace length with '-l' to get voltage, resistance and power calculations.\n" : 
+            "\n- Constants used for the P/I/V calculations were,\n\n"
+            "\ta = %.7lf (Temperature Coefficient)\n"
+            "%6srho = %.7lf (Resistivity)\n",
             ip->a.val, " " ,ip->resistivity.val); 
+
+    fprintf(file,   
+            "\n- Constants and method used were derived from https://ninjacalc.mbedded.ninja/calculators/electronics/pcb-design/track-current-ipc2152.\n");
 
     fprintf(file, DISCLAIMER_STR);
 }
+
+void output_help() {
+    printf("\nHelp for the Trace Width Calculator (TWC). Specify units with the long options, listed below the short options."
+            "\n\t-c, \t--current <Current [A]>\t\t\t\t= Input the trace current in Amps.\n"
+            "\t\t--current-mA\n"
+            "\n\t-w, \t--copper-weight <Copper Weight [oz/ft^2]>\t= Input the copper weight in oz per ft^2.\n"
+            "\t\t--copper-weight-mil\n"
+            "\t\t--copper-weight-mm\n"
+            "\t\t--copper-weight-um\n"
+            "\n\t-r \t--temperature-rise <Temperature Rise [C]>\t= Input the maximum allowed temperature rise in C.\n"
+            "\t\t--temperature-rise-F\n"
+            "\n\t-a, \t--temperature-ambient <Ambient Temperature [C]>\t= Input the ambient temperature of the trace in C.\n"
+            "\t\t--temperature-ambient-F\n"
+            "\n\t-l, \t--trace--length<Trace Length [cm]>\t\t= Input the trace length in centimeters.\n"
+            "\t\t--trace--length-mm\n"
+            "\t\t--trace--length-mil\n"
+            "\n\t-t, \t--pcb-thickness <Thickness [mm]>\t\t= Input the PCB thickness in milimeters.\n"
+            "\t\t--pcb-thickness-mil\n"
+            "\n\t-e, \t--pcb-thermal-conductivity <Therm. Con. [W/mK]>\t= Input the PCB thermal conductivity in Watts per meter Kelvin.\n"
+            "\n\t-p, \t--plane-area <Plane Area [in^2]>\t\t= Input the plane area in inches squared.\n"
+            "\t\t--plane-area-cm2\n"
+            "\n\t-d, \t--plane-distance <Plane Distance [mil]>\t\t= Input the plane distance in mil.\n"
+            "\t\t--plane-distance-mm\n"
+            "\n\t--resistivity <Resistivity [Ohmm]>\t\t\t= Input the resistivity in Ohm meters.\n"
+            "\n\t--temperature-coefficient <Temp. Coefficient [1/C]>\t= Input the temperature coefficient.\n"
+            "\n\t-o <File Name>\t\t\t= Write the name of the outputted file. Use '.txt' to create a text file. Use a single '.' to auto-generate the name based on date/time. Can also write the full path to the file, e.g. 'C:/Users/user/output.txt' or stop at 'C:/Users/user/' to use the auto-generated file name.\n");
+}
+
