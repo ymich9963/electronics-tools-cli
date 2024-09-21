@@ -448,7 +448,7 @@ void ipc2152_calcsA(ip_t* ip, op_t* op) {
     ip->cf.temperature_rise = ip->temperature_rise.val / (ip->cf.copper_weight * ip->cf.pcb_thickness * ip->cf.plane_distance * ip->cf.plane_area);
 
     /* Calculate the corrected area and trace width  */
-    op->layer.corr_area = calc_2152_areaA_mils2(ip, ip->cf.temperature_rise);
+    op->layer.corr_area = (110.515 * pow(ip->cf.temperature_rise, -0.871) + 0.803) * pow(ip->current.val, 0.868 * pow(ip->cf.temperature_rise, -0.102) + 1.129);    
     op->layer.corr_trace_width = calc_width_mils(ip, &op->layer.corr_area);
 
     calc_rvp(ip, &op->layer);
