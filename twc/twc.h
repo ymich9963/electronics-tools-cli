@@ -152,7 +152,7 @@ void output_results_IPC2221(ip_t* ip, op_t* op, FILE * file);
 void output_results_IPC2152_A(ip_t* ip, op_t* op, FILE * file);
 void output_results_IPC2152_B(ip_t* ip, op_t* op, FILE * file);
 void get_standard_method(int* argc, char** argv, ip_t* ip);
-void check_standard(char* strval, char** standard_arr, unsigned int size, unsigned int* index);
+void check_standard(char* strval, char** standard_arr, unsigned int size, unsigned char* index);
 void check_method(char chrval, char* method_arr, unsigned int size);
 void set_default_inputs(ip_t* ip);
 void sel_functions(ip_t* ip);

@@ -448,7 +448,7 @@ void get_standard_method(int* argc, char** argv, ip_t* ip) {
 
     unsigned char ssize = sizeof(standard_arr) / sizeof(standard_arr[0]);
     unsigned char msize = sizeof(method_arr) / sizeof(method_arr[0]);
-    unsigned int index;
+    unsigned char index;
 
     for(int i = 1; i < *argc; i++) {
         if(!(strcmp("--standard", argv[i]))) {
@@ -469,7 +469,7 @@ void get_standard_method(int* argc, char** argv, ip_t* ip) {
     }
 }
 
-void check_standard(char* strval, char** standard_arr, unsigned int size, unsigned int* index){
+void check_standard(char* strval, char** standard_arr, unsigned int size, unsigned char* index){
     bool okflag = false;
     for(int i = 0; i < size; i++) {
         if(!(strcmp(strval, standard_arr[i]))) {
