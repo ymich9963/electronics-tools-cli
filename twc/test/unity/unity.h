@@ -19,6 +19,8 @@ extern "C"
 {
 #endif
 
+#define UNITY_INCLUDE_DOUBLE
+
 #include "unity_internals.h"
 
 /*-------------------------------------------------------

@@ -30,7 +30,14 @@ clean:
 	rm -rf $(BUILD_DIR)
 	echo "Project /build cleaned."
 
-.PHONY: tests
-tests: 
+.PHONY: test
+test:: 
 	echo "Running tests..."
-	$(MAKE) test -C ./test
+	# $(MAKE) test -C ./test
+	cd ./test; \
+	$(MAKE) test;
+
+.PHONY: coverage 
+coverage: 
+	echo "Running coverage..."
+	$(MAKE) coverage -C ./test

@@ -14,36 +14,51 @@
 #define VAL_MAX         999999999.999999999 
 #define VAL_MIN         DBL_MIN
 #define OUT_FILE_MAX    30
-#define WELCOME_STR     "\nTrace Width Calculator, Made by Yiannis Michael (2024). \n\nPlease 'type twc.exe <Current [A]> <Copper Weight [oz/ft^2]>' to get output results. Use '--help' for explanation of the flags and more advanced usage, for different units, optional inputs, etc.\n\nThis tool should only be used to assist design decisions and not be used to replace professional advice. Developer(s) have no liability whatsoever."
+#define WELCOME_STR     "\nTrace Width Calculator, Made by Yiannis Michael (2024). \n\nPlease 'type twc.exe <Current [A]> <Copper Weight [oz/ft^2]>' to get output results. Use '--help' for explanation of the flags and more advanced usage, for different units, optional inputs, etc.\n\nThis tool should only be used to assist design decisions and not be used to replace professional advice. Developer(s) have no liability whatsoever.\n"
 #define FEW_ARGS_STR    "\nAn input of at least Current [A] and Copper Weight [oz/ft^2] is required. Use no arguments to get the welcome message and either '-h' or '--help' to get the list of commands.\n"
-#define VERSION_STR     "Trace Width Calculator (TWC)\n Version 1.0.0\n"
-#define DISCLAIMER_STR  "\nDesign assistance by the TWC tool is provided with no liability whatsover. For final decisions on electronics designs, please consult an actual qualified person.\n\n"
+#define VERSION_STR     "\nTrace Width Calculator (TWC)\n Version 1.0.0\n"
+#define DISCLAIMER_STR  "\nDesign assistance by the TWC tool is provided with no liability whatsover. For final decisions on electronics designs, please consult an actual qualified person.\n"
 
 /* Conversion macros */
 #define CONV_MIL2_TO_CM2(x)    ((x) * 0.00254 * 0.00254)
 #define CONV_MIL2_TO_MM2(x)    ((x) * 0.0254 * 0.0254)
-#define CONV_CM2_TO_INCH2(x)   ((x) * 2.54 * 2.54)
-#define CONV_MIL_TO_OZFT2(x)   ((x) / 1.37) // most sources say 1.37, few others say 1.378.
-#define CONV_MM_TO_OZFT2(x)    ((x) * 39.37007874 / 1.37)
-#define CONV_UM_TO_OZFT2(x)    ((x) * 39.37007874 / 1.37 * 1e-3)
-#define CONV_OZFT2_TO_MIL(x)   ((x) * 1.37)
-#define CONV_OZFT2_TO_MM(x)    ((x) * 1.37 * 0.0254) 
-#define CONV_OZFT2_TO_UM(x)    ((x) * 1.37 * 0.0254 * 1e3) 
+#define CONV_MM2_TO_MIL2(x)    ((x) / 0.0254 / 0.0254)
+#define CONV_CM2_TO_INCH2(x)   ((x) / (2.54 * 2.54))
+#define CONV_MIL_TO_OZFT2(x)   ((x) / 1.378) // most sources say 1.37, few others say 1.378.
+#define CONV_MM_TO_OZFT2(x)    ((x) * 39.37007874 / 1.378)
+#define CONV_UM_TO_OZFT2(x)    ((x) * 39.37007874 / 1.378 * 1e-3)
+#define CONV_OZFT2_TO_MIL(x)   ((x) * 1.378)
+#define CONV_OZFT2_TO_MM(x)    ((x) * 1.378 * 0.0254) 
+#define CONV_OZFT2_TO_UM(x)    ((x) * 1.378 * 0.0254 * 1e3) 
 #define CONV_MM_TO_MIL(x)      ((x) * 39.37007874)
 #define CONV_MIL_TO_MM(x)      ((x) * 0.0254)
 #define CONV_FAHR_TO_CELS(x)   (((x) - 32) / 1.8)
 #define CONV_CELS_TO_FAHR(x)   (((x) * 1.8) + 32)
-#define CONV_WmK_TO_BTUhftF(x) ((x) / 1.73)
-#define CONV_BTUhftF_TO_WmK(x) ((x) * 1.73)
+#define CONV_WmK_TO_BTUhftF(x) ((x) / 1.730735)
+#define CONV_BTUhftF_TO_WmK(x) ((x) * 1.73735)
 
 /* Check macros */
+
+/* Check response from sscanf */
 #define CHECK_RES(x)        ({ if (!(x)) { \
         fprintf(stderr, "Argument entered was wrong...\n"); \
-        exit(EXIT_FAILURE); \
+        return 1; \
         } }) 
+
+/* Check if value is between numerical limits */
 #define CHECK_LIMITS(x)     ({ if ((x) > VAL_MAX || (x) < VAL_MIN) { \
         fprintf(stderr, "Detected numbers out of range. Please check inputs and enter numbers between, \n%.15lf and %.15lf", VAL_MIN, VAL_MAX); \
+        return 1; \
+        } }) 
+
+/* Check if an error occured to exit program */
+#define CHECK_ERR(x)        ({ if ((x)) { \
         exit(EXIT_FAILURE); \
+        } }) 
+
+/* Check if a function returns failure */
+#define CHECK_RET(x)        ({ if ((x)) { \
+        return 1; \
         } }) 
 
 typedef struct Dbl {
@@ -116,10 +131,10 @@ typedef struct IP{
     cf_t cf;                    // Correction Factors   
     ofile_t ofile;              // Output file properties
     char uflag;                 // Units flag
-    void (*deft)(ip_t*);        // Set default values 
+    void (*defv)(ip_t*);        // Set default values 
     void (*proc)(ip_t*, op_t*); // Calculation procedure
-    void (*outp)(ip_t*, op_t*, FILE *file); // Output function
-    void (*outu)(ip_t*, op_t*); // Set output units 
+    int (*outp)(ip_t*, op_t*, FILE *file); // Output function
+    int (*outu)(ip_t*, op_t*);  // Set output units 
 }ip_t;
 
 enum {
@@ -133,8 +148,10 @@ enum {
  * @param argc Argument count.
  * @param argv Argument vector.
  * @param ip Input struct to store the inputs.
+ *
+ * @return Success or failure. 
  */
-void get_options(int* argc, char** argv, ip_t* ip);
+int get_options(int* argc, char** argv, ip_t* ip);
 
 /**
  * @brief Calculate using the IPC2221 standard, sourced from http://circuitcalculator.com/wordpress/2006/03/12/pcb-via-calculator/.
@@ -165,7 +182,7 @@ void calcs_IPC2152_B(ip_t* ip, op_t* op);
  *
  * @param ip Input struct to store the inputs.
  */
-void set_deft_IPC2221(ip_t* ip);
+void set_defv_IPC2221(ip_t* ip);
 
 
 /**
@@ -173,57 +190,34 @@ void set_deft_IPC2221(ip_t* ip);
  *
  * @param ip Input struct to store the inputs.
  */
-void set_deft_IPC2152_A(ip_t* ip);
+void set_defv_IPC2152_A(ip_t* ip);
 
 /**
  * @brief Set default values needed for the IPC2152, Method B calculations.
  *
  * @param ip Input struct to store the inputs.
  */
-void set_deft_IPC2152_B(ip_t* ip);
+void set_defv_IPC2152_B(ip_t* ip);
 
 /**
  * @brief Set the units for the IPC2221 outputs.
  *
  * @param ip Input struct to store the inputs.
  * @param op Output struct to store the outputs.
+ *
+ * @return Success or failure. 
  */
-void set_outu_IPC2221(ip_t* ip, op_t* op);
+int set_outu_IPC2221(ip_t* ip, op_t* op);
 
 /**
  * @brief Set the units for the IPC2152 outputs.
  *
  * @param ip Input struct to store the inputs.
  * @param op Output struct to store the outputs.
- */
-void set_outu_IPC2152(ip_t* ip, op_t* op);
-
-/**
- * @brief Outputted results when using the IPC2221.
  *
- * @param ip Input struct to store the inputs.
- * @param op Output struct to store the outputs.
- * @param file Buffer to output the strings.
+ * @return Success or failure. 
  */
-void output_results_IPC2221(ip_t* ip, op_t* op, FILE * file);
-
-/**
- * @brief Outputted results when using the IPC2512, Method A.
- *
- * @param ip Input struct to store the inputs.
- * @param op Output struct to store the outputs.
- * @param file Buffer to output the strings.
- */
-void output_results_IPC2152_A(ip_t* ip, op_t* op, FILE * file);
-
-/**
- * @brief Outputted results when using the IPC2512, Method B.
- *
- * @param ip Input struct to store the inputs.
- * @param op Output struct to store the outputs.
- * @param file Buffer to output the strings.
- */
-void output_results_IPC2152_B(ip_t* ip, op_t* op, FILE * file);
+int set_outu_IPC2152(ip_t* ip, op_t* op);
 
 /**
  * @brief Get the chosen standard and method from the input options. Called before get_options() so that the correct default variables are set.
@@ -231,8 +225,10 @@ void output_results_IPC2152_B(ip_t* ip, op_t* op, FILE * file);
  * @param argc Argument count.
  * @param argv Argument vector.
  * @param ip Input struct to store the inputs.
+ *
+ * @return Success or failure. 
  */
-void get_standard_method(int* argc, char** argv, ip_t* ip);
+int get_standard_method(int* argc, char** argv, ip_t* ip);
 
 /**
  * @brief Used to check the inputted standard option string, with the array containing the names of the standards. Index is used to set the standard numerical representation.
@@ -241,8 +237,10 @@ void get_standard_method(int* argc, char** argv, ip_t* ip);
  * @param standard_arr Array containing the standard names.
  * @param size Size of the array.
  * @param index Index when the string value matches an entry in the array.
+ *
+ * @return Success or failure. 
  */
-void check_standard(char* strval, char** standard_arr, unsigned int size, unsigned char* index);
+int check_standard(char* strval, char** standard_arr, unsigned int size, unsigned char* index);
 
 /**
  * @brief Used to check the inputted method agains an array containing the existing method codes/characters. No need to use the index since it's just characters.
@@ -250,15 +248,19 @@ void check_standard(char* strval, char** standard_arr, unsigned int size, unsign
  * @param chrval Inputted character argumen.
  * @param method_arr Array containing the method characters.
  * @param size Size of the array.
+ *
+ * @return Success or failure. 
  */
-void check_method(char chrval, char* method_arr, unsigned int size);
+int check_method(char chrval, char* method_arr, unsigned int size);
 
 /**
  * @brief Set the default, process, output unit, and output print set functions based on the standard and the method chosen.
  *
  * @param ip Input struct to check the method and the standard.
+ *
+ * @return Success or failure. 
  */
-void sel_functions(ip_t* ip);
+int sel_functions(ip_t* ip);
 
 /**
  * @brief Set the path and file for the outputs to be saved in.
@@ -288,7 +290,7 @@ char* get_time();
  * @param ip Input struct to get the inputs used in the calculation.
  * @param layer Output layer struct to store the results.
  */
-void calc_rvp(ip_t* ip, layer_t* layer);
+void calc_w_r_vd_pl(ip_t* ip, layer_t* layer);
 
 /**
  * @brief Used to calculate the width of the trace.
@@ -297,10 +299,10 @@ void calc_rvp(ip_t* ip, layer_t* layer);
  * @param cs_area Cross sectional area of the trace.
  * @return Trace width in type double.
  */
-double calc_width_mils(ip_t* ip, double* cs_area);
+double calc_trace_width_mils(ip_t* ip, double* cs_area);
 
 /**
- * @brief Calculate the resistance of the trace.
+ * @brief Calculate the resistance of the trace. Resistivity gets converted to Ohm cm.
  *
  * @param ip Input struct to get the required values.
  * @param cs_area Cross sectional area of the trace.
@@ -327,6 +329,33 @@ double calc_vdrop(ip_t* ip, double* resistance);
 double calc_power_loss(ip_t* ip, double* vdrop);
 
 /**
+ * @brief Outputted results when using the IPC2221.
+ *
+ * @param ip Input struct to store the inputs.
+ * @param op Output struct to store the outputs.
+ * @param file Buffer to output the strings.
+ */
+int output_results_IPC2221(ip_t* ip, op_t* op, FILE * file);
+
+/**
+ * @brief Outputted results when using the IPC2512, Method A.
+ *
+ * @param ip Input struct to store the inputs.
+ * @param op Output struct to store the outputs.
+ * @param file Buffer to output the strings.
+ */
+int output_results_IPC2152_A(ip_t* ip, op_t* op, FILE * file);
+
+/**
+ * @brief Outputted results when using the IPC2512, Method B.
+ *
+ * @param ip Input struct to store the inputs.
+ * @param op Output struct to store the outputs.
+ * @param file Buffer to output the strings.
+ */
+int output_results_IPC2152_B(ip_t* ip, op_t* op, FILE * file);
+
+/**
  * @brief Output the help string to the terminal.
  */
-void output_help();
+int output_help();

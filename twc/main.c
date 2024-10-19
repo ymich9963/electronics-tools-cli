@@ -17,19 +17,19 @@ int main(int argc, char** argv) {
     ip.resistivity.val = 1.724e-6;
     ip.a.val = 3.93e-3;
     ip.ofile.oflag = false;        
-    ip.ofile.path = "\0";
 
     /* Get the standard and the method for the calculations */
-    get_standard_method(&argc, argv, &ip);
+    CHECK_ERR(get_standard_method(&argc, argv, &ip));
 
     /* Set functions based on the inputs */
-    sel_functions(&ip);
+    CHECK_ERR(sel_functions(&ip));
 
     /* Set defaults */
-    ip.deft(&ip);
+    ip.defv(&ip);
 
     /* Get the inputs and options */
-    get_options(&argc, argv, &ip);
+    // TODO: Check options with a switch case with 0, 1, and 2 for succesful program exit
+    CHECK_ERR(get_options(&argc, argv, &ip));
 
     /* Calculate the values */
     ip.proc(&ip, &op);

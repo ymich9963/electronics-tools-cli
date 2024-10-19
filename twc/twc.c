@@ -1,28 +1,28 @@
 #include "twc.h"
 
-void get_options(int* argc, char** argv, ip_t* ip) {
+int get_options(int* argc, char** argv, ip_t* ip) {
     unsigned char num_rec = 0; /* Used to record the two allowed numerical options */
     double val; /* Temporary value to store the argument */
 
     if(*argc == 1) {
         printf(WELCOME_STR);
-        exit(EXIT_SUCCESS);
+        return 0;
     }
 
     for(int i = 1; i < *argc; i++) {
         /* Check these options before anything else */
         if (!(strcmp("-h", argv[i])) || !(strcmp("--help", argv[i]))) {
             output_help();
-            exit(EXIT_SUCCESS);
+            return 0;
         } 
         if (!(strcmp("--version", argv[i]))) {
             printf(VERSION_STR);
-            exit(EXIT_SUCCESS);
+            return 0;
         } 
         /* Important to check when using the default numerical behaviour */
         if (*argc == 2) {
             fprintf(stderr, "%s\n", FEW_ARGS_STR);
-            exit(EXIT_FAILURE);
+            return 1;
         }
         if (!(strcmp("-o", argv[i])) || !(strcmp("--output", argv[i]))) {
             ip->ofile.oflag = true;
@@ -175,7 +175,7 @@ void get_options(int* argc, char** argv, ip_t* ip) {
             i++;
             continue;
         }
-        if(!(strcmp("-p", argv[i])) || !(strcmp("--plane-cs_area", argv[i]))) {
+        if(!(strcmp("-p", argv[i])) || !(strcmp("--plane-area", argv[i]))) {
             CHECK_RES(sscanf(argv[i + 1], "%lf", &val));
             CHECK_LIMITS(val);
             ip->plane_area.outval = val;
@@ -184,7 +184,7 @@ void get_options(int* argc, char** argv, ip_t* ip) {
             i++;
             continue;
         }
-        if(!(strcmp("--plane-cs_area-cm2", argv[i]))) {
+        if(!(strcmp("--plane-area-cm2", argv[i]))) {
             CHECK_RES(sscanf(argv[i + 1], "%lf", &val));
             CHECK_LIMITS(val);
             ip->plane_area.outval = val;
@@ -255,105 +255,112 @@ void get_options(int* argc, char** argv, ip_t* ip) {
             CHECK_LIMITS(val);
             printf("\n%lf\n\n", CONV_MIL2_TO_CM2(val));
             printf("Converted using the TWC.\n");
-            exit(EXIT_SUCCESS);
+            return 1;
         }
         if(!(strcmp("--convert-mil2-mm2", argv[i]))) {
             CHECK_RES(sscanf(argv[i + 1], "%lf", &val));
             CHECK_LIMITS(val);
             printf("\n%lf\n\n", CONV_MIL2_TO_MM2(val));
             printf("Converted using the TWC.\n");
-            exit(EXIT_SUCCESS);
+            return 1;
+        }
+        if(!(strcmp("--convert-mm2-mil2", argv[i]))) {
+            CHECK_RES(sscanf(argv[i + 1], "%lf", &val));
+            CHECK_LIMITS(val);
+            printf("\n%lf\n\n", CONV_MM2_TO_MIL2(val));
+            printf("Converted using the TWC.\n");
+            return 1;
         }
         if(!(strcmp("--convert-cm2-in2", argv[i]))) {
             CHECK_RES(sscanf(argv[i + 1], "%lf", &val));
             CHECK_LIMITS(val);
             printf("\n%lf\n\n", CONV_CM2_TO_INCH2(val));
             printf("Converted using the TWC.\n");
-            exit(EXIT_SUCCESS);
+            return 1;
         }
         if(!(strcmp("--convert-mil-ozft2", argv[i]))) {
             CHECK_RES(sscanf(argv[i + 1], "%lf", &val));
             CHECK_LIMITS(val);
             printf("\n%lf\n\n", CONV_MIL_TO_OZFT2(val));
             printf("Converted using the TWC.\n");
-            exit(EXIT_SUCCESS);
+            return 1;
         }
         if(!(strcmp("--convert-mm-ozft2", argv[i]))) {
             CHECK_RES(sscanf(argv[i + 1], "%lf", &val));
             CHECK_LIMITS(val);
             printf("\n%lf\n\n", CONV_MM_TO_OZFT2(val) );
             printf("Converted using the TWC.\n");
-            exit(EXIT_SUCCESS);
+            return 1;
         }
         if(!(strcmp("--convert-um-ozft2", argv[i]))) {
             CHECK_RES(sscanf(argv[i + 1], "%lf", &val));
             CHECK_LIMITS(val);
             printf("\n%lf\n\n", CONV_UM_TO_OZFT2(val) );
             printf("Converted using the TWC.\n");
-            exit(EXIT_SUCCESS);
+            return 1;
         }
         if(!(strcmp("--convert-ozft2-mil", argv[i]))) {
             CHECK_RES(sscanf(argv[i + 1], "%lf", &val));
             CHECK_LIMITS(val);
             printf("\n%lf\n\n", CONV_OZFT2_TO_MIL(val));
             printf("Converted using the TWC.\n");
-            exit(EXIT_SUCCESS);
+            return 1;
         }
         if(!(strcmp("--convert-ozft2-mm", argv[i]))) {
             CHECK_RES(sscanf(argv[i + 1], "%lf", &val));
             CHECK_LIMITS(val);
             printf("\n%lf\n\n", CONV_OZFT2_TO_MM(val));
             printf("Converted using the TWC.\n");
-            exit(EXIT_SUCCESS);
+            return 1;
         }
         if(!(strcmp("--convert-ozft2-um", argv[i]))) {
             CHECK_RES(sscanf(argv[i + 1], "%lf", &val));
             CHECK_LIMITS(val);
             printf("\n%lf\n\n", CONV_OZFT2_TO_UM(val));
             printf("Converted using the TWC.\n");
-            exit(EXIT_SUCCESS);
+            return 1;
         }
         if(!(strcmp("--convert-mm-mil", argv[i]))) {
             CHECK_RES(sscanf(argv[i + 1], "%lf", &val));
             CHECK_LIMITS(val);
             printf("\n%lf\n\n", CONV_MM_TO_MIL(val));
             printf("Converted using the TWC.\n");
-            exit(EXIT_SUCCESS);
+            return 1;
         }
         if(!(strcmp("--convert-mil-mm", argv[i]))) {
             CHECK_RES(sscanf(argv[i + 1], "%lf", &val));
             CHECK_LIMITS(val);
             printf("\n%lf\n\n", CONV_CM2_TO_INCH2(val));
             printf("Converted using the TWC.\n");
-            exit(EXIT_SUCCESS);
+            return 1;
         }
         if(!(strcmp("--convert-F-C", argv[i]))) {
             CHECK_RES(sscanf(argv[i + 1], "%lf", &val));
             CHECK_LIMITS(val);
             printf("\n%lf\n\n", CONV_FAHR_TO_CELS(val));
             printf("Converted using the TWC.\n");
-            exit(EXIT_SUCCESS);
+            return 1;
         }
         if(!(strcmp("--convert-C-F", argv[i]))) {
             CHECK_RES(sscanf(argv[i + 1], "%lf", &val));
             CHECK_LIMITS(val);
             printf("\n%lf\n\n", CONV_CELS_TO_FAHR(val));
             printf("Converted using the TWC.\n");
-            exit(EXIT_SUCCESS);
+            return 1;
         }
         if(!(strcmp("--convert-WmK-BTUhftF", argv[i]))) {
             CHECK_RES(sscanf(argv[i + 1], "%lf", &val));
             CHECK_LIMITS(val);
             printf("\n%lf\n\n", CONV_WmK_TO_BTUhftF(val));
             printf("Converted using the TWC.\n");
-            exit(EXIT_SUCCESS);
+            return 1;
         }
         if(!(strcmp("--convert-BTUhftF-WmK", argv[i]))) {
             CHECK_RES(sscanf(argv[i + 1], "%lf", &val));
             CHECK_LIMITS(val);
             printf("\n%lf\n\n", CONV_BTUhftF_TO_WmK(val));
             printf("Converted using the TWC.\n");
-            exit(EXIT_SUCCESS);
+            return 1;
         }
 
         /* Just ignore these two since they are checked before */
@@ -368,17 +375,18 @@ void get_options(int* argc, char** argv, ip_t* ip) {
 
         /* Error checking */
         fprintf(stderr, "\nUnknown option '%s', exiting.\n", argv[i]);
-        exit(EXIT_FAILURE);
+        return 1;
     }
 
     /* At least current and copper weight should be entered */
     if((ip->current.val == 0) || ip->copper_weight.val == 0) {
         fprintf(stderr, "\nPlease input at least the Current and the Copper Weight.\n\n");
-        exit(EXIT_FAILURE);
+        return 1;
     }
+    return 0;
 }
 
-void get_standard_method(int* argc, char** argv, ip_t* ip) {
+int get_standard_method(int* argc, char** argv, ip_t* ip) {
     char* standard_arr[] = {"IPC2221", "IPC2152", "afko"}; /* Standard names array */
     int standard_const[] = {2221, 2152, 666}; /* Number representation of the standards */
     char method_arr[] = {'A', 'B'}; /* Method array */
@@ -394,7 +402,7 @@ void get_standard_method(int* argc, char** argv, ip_t* ip) {
     for(int i = 1; i < *argc; i++) {
         if(!(strcmp("--standard", argv[i]))) {
             CHECK_RES(sscanf(argv[i + 1], "%s", strval));
-            check_standard(strval, standard_arr, ssize, &index);
+            CHECK_RET(check_standard(strval, standard_arr, ssize, &index));
             ip->standard.str = strval;
             ip->standard.num = standard_const[index];
             i++;
@@ -402,15 +410,16 @@ void get_standard_method(int* argc, char** argv, ip_t* ip) {
         }
         if(!(strcmp("--method", argv[i]))) {
             CHECK_RES(sscanf(argv[i + 1], "%s", strval));
-            check_method(strval[0], method_arr, msize);
+            CHECK_RET(check_method(strval[0], method_arr, msize));
             ip->method = strval[0];
             i++;
             continue;
         }
     }
+    return 0;
 }
 
-void check_standard(char* strval, char** standard_arr, unsigned int size, unsigned char* index){
+int check_standard(char* strval, char** standard_arr, unsigned int size, unsigned char* index) {
     bool okflag = false;
     for(int i = 0; i < size; i++) {
         if(!(strcmp(strval, standard_arr[i]))) {
@@ -419,14 +428,17 @@ void check_standard(char* strval, char** standard_arr, unsigned int size, unsign
             break;
         }
     }
+
     /* In the case where no match is made */
     if(!okflag) {
-        fprintf(stderr, "Unknown standard (%s) used...", strval);
-        exit(EXIT_FAILURE);
+        fprintf(stderr, "\nUnknown standard (%s) used...\n", strval);
+        return 1;
     }
+
+    return 0;
 }
 
-void check_method(char chrval, char* method_arr, unsigned int size){
+int check_method(char chrval, char* method_arr, unsigned int size){
     bool okflag = false;
     for(int i = 0; i < size; i++) {
         if(chrval == method_arr[i]) {
@@ -434,13 +446,16 @@ void check_method(char chrval, char* method_arr, unsigned int size){
             break;
         }
     }
+
     if(!okflag) {
-        fprintf(stderr, "Unknown method (%c) used...", chrval);
-        exit(EXIT_FAILURE);
+        fprintf(stderr, "\nUnknown method (%c) used...\n", chrval);
+        return 1;
     }
+
+    return 0;
 }
 
-void set_outu_IPC2221(ip_t* ip, op_t* op) {
+int set_outu_IPC2221(ip_t* ip, op_t* op) {
     switch (ip->uflag) {
         case 'm':
             op->extl.cs_area.units = "mm^2";
@@ -454,19 +469,19 @@ void set_outu_IPC2221(ip_t* ip, op_t* op) {
             op->intl.trace_width.val = CONV_MIL_TO_MM(op->intl.trace_width.val);
             break;
         case 'i':
-            /* This case is the default so just let it go to the default branch*/
-        default:
             op->extl.cs_area.units = "mil^2";
             op->extl.trace_width.units = "mil";
-
             op->intl.cs_area.units = "mil^2";
             op->intl.trace_width.units = "mil";
             break;
+        default:
+            fprintf(stderr, "\nShould be impossible to reach this condition...\n");
+            return 1;
     }
-
+    return 0;
 }
 
-void set_outu_IPC2152(ip_t* ip, op_t* op) {
+int set_outu_IPC2152(ip_t* ip, op_t* op) {
     switch (ip->uflag) {
         case 'm':
             op->layer.cs_area.units = "mm^2";
@@ -479,17 +494,19 @@ void set_outu_IPC2152(ip_t* ip, op_t* op) {
             op->layer.corr_trace_width.val = CONV_MIL_TO_MM(op->layer.corr_trace_width.val);
             break;
         case 'i':
-            /* This case is the default so just let it go to the default branch*/
-        default:
             op->layer.cs_area.units = "mil^2";
             op->layer.trace_width.units = "mil";
             op->layer.corr_cs_area.units = "mil^2";
             op->layer.corr_trace_width.units = "mil";
+            break;
+        default:
+            fprintf(stderr, "\nShould be impossible to reach this condition...\n");
+            return 1;
     }
-
+    return 0;
 }
 
-void set_def_IPC2221(ip_t* ip) {
+void set_defv_IPC2221(ip_t* ip) {
     ip->current.outval = 0;      
     ip->current.val = 0;      
     ip->current.units = "A";      
@@ -509,9 +526,17 @@ void set_def_IPC2221(ip_t* ip) {
     ip->trace_length.outval = 0;           
     ip->trace_length.val = 0;           
     ip->trace_length.units = "cm";           
+
+    ip->resistivity.outval = 1.72e-8; // Annealed copper
+    ip->resistivity.val = 1.72e-8;
+    ip->resistivity.units = "Ohm m";
+
+    ip->a.outval = 0.00393; // Annealed copper
+    ip->a.val = 0.00393;
+    ip->a.units = "1/C";
 }
 
-void set_deft_IPC2152_A(ip_t* ip) {
+void set_defv_IPC2152_A(ip_t* ip) {
     ip->current.outval = 0;      
     ip->current.val = 0;      
     ip->current.units = "A";      
@@ -540,15 +565,23 @@ void set_deft_IPC2152_A(ip_t* ip) {
     ip->pcb_thickness.val = 62;
     ip->pcb_thickness.units = "mil"; 
 
+    ip->resistivity.outval = 1.72e-8; // Annealed copper
+    ip->resistivity.val = 1.72e-8;
+    ip->resistivity.units = "Ohm m";
+
+    ip->a.outval = 0.00393;
+    ip->a.val = 0.00393;
+    ip->a.units = "1/C";
+
     /* Set modifier defaults */
-    /* ip->cf.copper_weight is not defaulted to 1 */
+    ip->cf.copper_weight = 1;
     ip->cf.temperature_rise = 1;
     ip->cf.plane_area = 1;
     ip->cf.pcb_thickness = 1;
     ip->cf.plane_distance = 1;
 }
 
-void set_deft_IPC2152_B(ip_t* ip) {
+void set_defv_IPC2152_B(ip_t* ip) {
     /* Set input value defaults */
     ip->current.outval = 0;      
     ip->current.val = 0;      
@@ -578,53 +611,59 @@ void set_deft_IPC2152_B(ip_t* ip) {
     ip->pcb_thickness.val = 62;
     ip->pcb_thickness.units = "mil"; 
 
+    ip->resistivity.outval = 1.72e-8; // Annealed copper
+    ip->resistivity.val = 1.72e-8;
+    ip->resistivity.units = "Ohm m";
+
+    ip->a.outval = 0.00393;
+    ip->a.val = 0.00393;
+    ip->a.units = "1/C";
+
     /* Set modifier defaults */
-    /* ip->cf.copper_weight is not defaulted to 1 */
+    ip->cf.copper_weight = 0;
     ip->cf.pcb_thickness = 1;
     ip->cf.plane_distance = 1;
     ip->cf.pcb_thermal_cond = 1;
 }
 
-void sel_functions(ip_t* ip) {
+int sel_functions(ip_t* ip) {
     switch (ip->standard.num) {
         case IPC2221:
-            ip->method = 'A'; /* Default to A since only one method for IPC2221 */
             switch (ip->method) {
                 case 'A':
-                    ip->deft = &set_def_IPC2221;
+                    ip->defv = &set_defv_IPC2221;
                     ip->proc = &calcs_IPC2221; 
                     ip->outu = &set_outu_IPC2221; 
                     ip->outp = &output_results_IPC2221; 
                     break;
                 default:
-                    fprintf(stderr, "Method %c for the IPC-%d doesn't exist.", ip->method, ip->standard.num);
-                    exit(EXIT_FAILURE);
+                    fprintf(stderr, "\nMethod %c for the IPC-%d doesn't exist.\n", ip->method, ip->standard.num);
+                    return 1;
             }
-            return;
         case IPC2152:
             switch (ip->method) {
                 case 'A':
-                    ip->deft = &set_deft_IPC2152_A;
+                    ip->defv = &set_defv_IPC2152_A;
                     ip->proc = &calcs_IPC2152_A; 
                     ip->outu = &set_outu_IPC2152; 
                     ip->outp = &output_results_IPC2152_A; 
                     break;
                 case 'B':
-                    ip->deft = &set_deft_IPC2152_B;
+                    ip->defv = &set_defv_IPC2152_B;
                     ip->proc = &calcs_IPC2152_B; 
                     ip->outu = &set_outu_IPC2152; 
                     ip->outp = &output_results_IPC2152_B; 
                     break;
                 default:
-                    fprintf(stderr, "Method %c for the IPC-%d doesn't exist.", ip->method, ip->standard.num);
-                    exit(EXIT_FAILURE);
+                    fprintf(stderr, "\nMethod %c for the IPC-%d doesn't exist.\n", ip->method, ip->standard.num);
+                    return 1;
             }
             break;
         default:
-            fprintf(stderr, "Standard IPC-%d doesn't exist.",ip->standard.num);
-
+            fprintf(stderr, "\nStandard IPC-%d doesn't exist.\n",ip->standard.num);
+            return 1;
     }
-    return;
+    return 0;
 }
 
 void autogen_file_name(char* fname) {
@@ -634,29 +673,30 @@ void autogen_file_name(char* fname) {
 }
 
 void set_output_file(ofile_t* ofile, char* optarg) {
-    ofile->fname = malloc(sizeof(char) * OUT_FILE_MAX);
+    ofile->fname = calloc(OUT_FILE_MAX , sizeof(char));
 
     /* If given a . use the current directory for the output */
     if (*optarg == '.') {
         autogen_file_name(ofile->fname);
-        /* If given a path with no name, autogenerate the name at that path */
+    /* If given a path with no name, autogenerate the name at that path */
     } else if (optarg[strlen(optarg) - 1] == '/') {
         ofile->path = malloc(sizeof(char) * PATH_MAX); // PATH_MAX = 260
-        sscanf(optarg, "%s", ofile->path);
+        strcpy(ofile->path, optarg); 
         autogen_file_name(ofile->fname);
-        /* Last case is a file name */ 
+    /* Last case is a file name */ 
     } else {
-        sscanf(optarg, "%s", ofile->fname);
+        strcpy(ofile->fname, optarg); 
     }
+
     ofile->dest = malloc(sizeof(char) * (strlen(ofile->path) + strlen(ofile->fname)));
     sprintf(ofile->dest, "%s%s", ofile->path, ofile->fname);
 }
 
 void calcs_IPC2221(ip_t* ip, op_t* op) {
-    op->extl.cs_area.val = pow(ip->current.val/k_EXT * pow(ip->temperature_rise.val, 0.44), 1/0.725); 
-    calc_rvp(ip, &op->extl);
-    op->intl.cs_area.val = pow(ip->current.val/k_INT * pow(ip->temperature_rise.val, 0.44), 1/0.725); 
-    calc_rvp(ip, &op->intl);
+    op->extl.cs_area.val = pow(ip->current.val/(k_EXT * pow(ip->temperature_rise.val, 0.44)), 1/0.725); 
+    calc_w_r_vd_pl(ip, &op->extl);
+    op->intl.cs_area.val = pow(ip->current.val/(k_INT * pow(ip->temperature_rise.val, 0.44)), 1/0.725); 
+    calc_w_r_vd_pl(ip, &op->intl);
 }
 
 void calcs_IPC2152_A(ip_t* ip, op_t* op) {
@@ -678,7 +718,7 @@ void calcs_IPC2152_A(ip_t* ip, op_t* op) {
         ip->cf.pcb_thickness = 25.959 * pow(ip->pcb_thickness.val, -0.7666);
     }
 
-    /* Plane cs_area correction factor */
+    /* Plane area correction factor */
     if (ip->plane_area.val >= 40) {
         ip->cf.plane_area = 0.89;
     } else if (ip->plane_area.val >= 20) {
@@ -697,11 +737,15 @@ void calcs_IPC2152_A(ip_t* ip, op_t* op) {
     /* Calculate the corrected temperature rise */
     ip->cf.temperature_rise = ip->temperature_rise.val / (ip->cf.copper_weight * ip->cf.pcb_thickness * ip->cf.plane_distance * ip->cf.plane_area);
 
-    /* Calculate the corrected cs_area and trace width  */
+    /* Calculate the corrected CS area */
     op->layer.corr_cs_area.val = (110.515 * pow(ip->cf.temperature_rise, -0.871) + 0.803) * pow(ip->current.val, 0.868 * pow(ip->cf.temperature_rise, -0.102) + 1.129);    
-    op->layer.corr_trace_width.val = calc_width_mils(ip, &op->layer.corr_cs_area.val);
 
-    calc_rvp(ip, &op->layer);
+    /* Corrected Trace Width */
+    op->layer.corr_trace_width.val = 0.7692 * calc_trace_width_mils(ip, &op->layer.corr_cs_area.val) * 1.378; // multiply by 1.378 to remove the conversion inside the function
+
+    calc_w_r_vd_pl(ip, &op->layer);
+
+    op->layer.trace_width.val = 0.7692 * calc_trace_width_mils(ip, &op->layer.cs_area.val) * 1.378; // overwrites the result from calc_w_r_vd_pl()
 }
 
 void calcs_IPC2152_B(ip_t* ip, op_t* op) {
@@ -735,17 +779,17 @@ void calcs_IPC2152_B(ip_t* ip, op_t* op) {
     /* PCB Thermal Conductivity must be in BTU/h*ft*F */
     ip->cf.pcb_thermal_cond = -1.4210148167 * ip->pcb_thermal_cond.val + 1.1958174134;
 
-    /* Corrected cs_area */
+    /* Corrected CS area */
     op->layer.corr_cs_area.val = op->layer.cs_area.val * ip->cf.copper_weight * ip->cf.pcb_thickness * ip->cf.plane_distance * ip->cf.pcb_thermal_cond;
 
     /* Corrected Trace Width */
-    op->layer.corr_trace_width.val = op->layer.corr_cs_area.val / ip->copper_weight.val;
+    op->layer.corr_trace_width.val = calc_trace_width_mils(ip, &op->layer.corr_cs_area.val);
 
-    calc_rvp(ip, &op->layer);
+    calc_w_r_vd_pl(ip, &op->layer);
 }
 
-void calc_rvp(ip_t* ip, layer_t* layer) {
-    layer->trace_width.val = calc_width_mils(ip, &layer->cs_area.val);
+void calc_w_r_vd_pl(ip_t* ip, layer_t* layer) {
+    layer->trace_width.val = calc_trace_width_mils(ip, &layer->cs_area.val);
     if (ip->trace_length.val > 0) {
         layer->resistance.val  = calc_resistance(ip, &layer->cs_area.val); 
     }
@@ -753,7 +797,7 @@ void calc_rvp(ip_t* ip, layer_t* layer) {
     layer->power_loss.val = calc_power_loss(ip, &layer->voltage_drop.val);
 }
 
-double calc_width_mils(ip_t* ip, double* cs_area) {
+double calc_trace_width_mils(ip_t* ip, double* cs_area) {
     return *cs_area/CONV_OZFT2_TO_MIL(ip->copper_weight.val);
 }
 
@@ -777,7 +821,7 @@ char* get_time() {
     return s;
 }
 
-void output_results_IPC2221(ip_t* ip, op_t* op, FILE * file) {
+int output_results_IPC2221(ip_t* ip, op_t* op, FILE * file) {
     fprintf(file,   
             "\n"
             "Current:\t\t%lf\t[%s]\n"
@@ -790,9 +834,9 @@ void output_results_IPC2221(ip_t* ip, op_t* op, FILE * file) {
     fprintf(file,   
             "\n\n"
             "        External Layers\n"
-            "Area: \t\t\t%lf\t[mil^2]\n"
-            "Width:\t\t\t%lf\t[mil]\n"
-            ,op->extl.cs_area.val, op->extl.trace_width.val);
+            "Area: \t\t\t%lf\t[%s]\n"
+            "Width:\t\t\t%lf\t[%s]\n"
+            ,op->extl.cs_area.val, op->extl.cs_area.units, op->extl.trace_width.val, op->extl.trace_width.units);
 
     fprintf(file,
             ip->trace_length.val > 0 ? 
@@ -805,9 +849,9 @@ void output_results_IPC2221(ip_t* ip, op_t* op, FILE * file) {
 
     fprintf(file,   
             "        Internal Layers\n"
-            "Area: \t\t\t%lf\t[mil^2]\n"
-            "Width:\t\t\t%lf\t[mil]\n"
-            ,op->intl.cs_area.val, op->intl.trace_width.val);
+            "Area: \t\t\t%lf\t[%s]\n"
+            "Width:\t\t\t%lf\t[%s]\n"
+            ,op->intl.cs_area.val, op->intl.cs_area.units, op->intl.trace_width.val, op->intl.trace_width.units);
 
     fprintf(file,
             ip->trace_length.val > 0 ? 
@@ -835,9 +879,11 @@ void output_results_IPC2221(ip_t* ip, op_t* op, FILE * file) {
             "\n- Constants and method used were derived from http://circuitcalculator.com/wordpress/2006/03/12/pcb-via-calculator/.\n");
 
     fprintf(file, DISCLAIMER_STR);
+
+    return EXIT_SUCCESS;
 }
 
-void output_results_IPC2152_A(ip_t* ip, op_t *op, FILE *file) {
+int output_results_IPC2152_A(ip_t* ip, op_t *op, FILE *file) {
     fprintf(file,
             "\n"
             "Current:\t\t%lf\t[%s]\n"
@@ -884,9 +930,11 @@ void output_results_IPC2152_A(ip_t* ip, op_t *op, FILE *file) {
             "\n- Constants and method used were derived from https://www.smps.us/pcb-calculator.html.\n");
 
     fprintf(file, DISCLAIMER_STR);
+
+    return EXIT_SUCCESS;
 }
 
-void output_results_IPC2152_B(ip_t* ip, op_t *op, FILE *file) {
+int output_results_IPC2152_B(ip_t* ip, op_t *op, FILE *file) {
     fprintf(file,
             "\n"
             "Current:\t\t%lf\t[%s]\n"
@@ -932,10 +980,12 @@ void output_results_IPC2152_B(ip_t* ip, op_t *op, FILE *file) {
             "\n- Constants and method used were derived from https://ninjacalc.mbedded.ninja/calculators/electronics/pcb-design/track-current-ipc2152.\n");
 
     fprintf(file, DISCLAIMER_STR);
+
+    return EXIT_SUCCESS;
 }
 
 // TODO: Create help for each option?
-void output_help() {
+int output_help() {
     printf("\nHelp for the Trace Width Calculator (TWC). Specify units with the long options, listed below the short options."
             "\n\t-c, \t--current <Current [A]>\t\t\t\t= Input the trace current in Amps.\n"
             "\t\t--current-mA\n"
@@ -957,14 +1007,15 @@ void output_help() {
             "\t\t--plane-cs_area-cm2\n"
             "\n\t-d, \t--plane-distance <Plane Distance [mil]>\t\t= Input the plane distance in mil.\n"
             "\t\t--plane-distance-mm\n"
-            "\n\t--resistivity <Resistivity [Ohmm]>\t\t\t= Input the resistivity in Ohm meters.\n"
+            "\n\t--resistivity <Resistivity [Ohm m]>\t\t\t= Input the resistivity in Ohm meters.\n"
             "\n\t--temperature-coefficient <Temp. Coefficient [1/C]>\t= Input the temperature coefficient.\n"
             "\n\t-o <File Name>\t\t\t= Write the name of the outputted file. Use '.txt' to create a text file. Use a single '.' to auto-generate the name based on date/time. Can also write the full path to the file, e.g. 'C:/Users/user/output.txt' or stop at 'C:/Users/user/' to use the auto-generated file name.\n"
             "\n\t-m, \t--metric\t\t\t\t\t= Make the output units be metric.\n"
             "\n\t-i, \t--imperial\t\t\t\t\t= Make the output units be imperial. Default behaviour, therefore just implemented for completion.\n"
             "\n\n\t\t\tCONVERSIONS\n"
-            "\n\t--convert-mil2-cm2\t= From mils sq. to cm sq."
-            "\n\t--convert-mil2-mm2\t= From mils sq. to mm sq."
+            "\n\t--convert-mil2-cm2\t= From mils sq. to centimeters sq."
+            "\n\t--convert-mil2-mm2\t= From mils sq. to milimeters sq."
+            "\n\t--convert-mm2-mil2\t= From milimeters sq. to mil sq."
             "\n\t--convert-cm2-in2\t= From cm sq. to inches sq."
             "\n\t--convert-mil-ozft2\t= From mils to ounce per foot sq."
             "\n\t--convert-mm-ozft2\t= From milimeters to ounce per foot sq."
@@ -979,5 +1030,7 @@ void output_help() {
             "\n\t--convert-WmK-BTUhftF\t= From Watts per mili Kelvin to BTU/h*ft*F."
             "\n\t--convert-BTUhftF-WmK\t= From BTU/h*ft*F to Watts per mili Kelvin."
             "\n\n");
+
+    return EXIT_SUCCESS;
 }
 
