@@ -35,7 +35,7 @@
 #define CONV_FAHR_TO_CELS(x)   (((x) - 32) / 1.8)
 #define CONV_CELS_TO_FAHR(x)   (((x) * 1.8) + 32)
 #define CONV_WmK_TO_BTUhftF(x) ((x) / 1.730735)
-#define CONV_BTUhftF_TO_WmK(x) ((x) * 1.73735)
+#define CONV_BTUhftF_TO_WmK(x) ((x) * 1.730735)
 
 /* Check macros */
 
