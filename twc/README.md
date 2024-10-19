@@ -1,5 +1,6 @@
 # Trace Width Calculator (TWC)
-!\[badge\](https://badgen.net/badge/Coverage/100/blue)
+![badge](https://badgen.net/badge/Coverage/100/blue)
+
 A calculator tool used to assist designing rigid PCB traces. Implements both the IPC2221 and IPC2152 standards and has the ability to choose between the two, with the latter having two methods available for the outputs. Each method used for the standards was derived from one of the various websites that claim to implement a trace width calculator.
 
 ## Methods
