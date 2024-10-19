@@ -1,4 +1,4 @@
 */build/
-*/results/
-*.uncrustify
+*/test/build/
+*/test/results/
 */formatted/
