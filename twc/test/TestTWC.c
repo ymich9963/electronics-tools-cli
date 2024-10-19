@@ -600,18 +600,18 @@ void test_get_options() {
 
     argc = 1;
     argv[0] = "first";
-    TEST_ASSERT_EQUAL_INT(0, get_options(&argc, argv, &ip));
+    TEST_ASSERT_EQUAL_INT(1, get_options(&argc, argv, &ip));
 
     argc = 2;
     argv[1] = "-h";
-    TEST_ASSERT_EQUAL_INT(0, get_options(&argc, argv, &ip));
+    TEST_ASSERT_EQUAL_INT(1, get_options(&argc, argv, &ip));
 
     argc = 2;
     argv[1] = "--version";
-    TEST_ASSERT_EQUAL_INT(0, get_options(&argc, argv, &ip));
+    TEST_ASSERT_EQUAL_INT(1, get_options(&argc, argv, &ip));
 
     argc = 2;
-    TEST_ASSERT_EQUAL_INT(0, get_options(&argc, argv, &ip));
+    TEST_ASSERT_EQUAL_INT(1, get_options(&argc, argv, &ip));
 
     char cmd0[] = "first 1 2";
     split(cmd0, argv, &argc);

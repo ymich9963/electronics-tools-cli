@@ -6,18 +6,18 @@ int get_options(int* argc, char** argv, ip_t* ip) {
 
     if(*argc == 1) {
         printf(WELCOME_STR);
-        return 0;
+        return 1;
     }
 
     for(int i = 1; i < *argc; i++) {
         /* Check these options before anything else */
         if (!(strcmp("-h", argv[i])) || !(strcmp("--help", argv[i]))) {
             output_help();
-            return 0;
+            return 1;
         } 
         if (!(strcmp("--version", argv[i]))) {
             printf(VERSION_STR);
-            return 0;
+            return 1;
         } 
         /* Important to check when using the default numerical behaviour */
         if (*argc == 2) {

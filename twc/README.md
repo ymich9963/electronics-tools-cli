@@ -14,6 +14,9 @@ One method is implemented for IPC2221 and two methods for IPC2152. The tool defa
 
 - Method B: Derived from [NinjaCalc](https://ninjacalc.mbedded.ninja/calculators/electronics/pcb-design/track-current-ipc2152).
 
+## Installing
+To install and use the `twc` command. Make sure to have the latest version, place it in a folder, and add that folder path to your Enviroment Variables.
+
 ## Building
 Clone the repository and got to this directory. Using `make` simply run in a command line,
 ```
