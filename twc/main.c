@@ -28,7 +28,6 @@ int main(int argc, char** argv) {
     ip.defv(&ip);
 
     /* Get the inputs and options */
-    // TODO: Check options with a switch case with 0, 1, and 2 for succesful program exit
     CHECK_ERR(get_options(&argc, argv, &ip));
 
     /* Calculate the values */
