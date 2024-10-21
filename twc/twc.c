@@ -1,4 +1,5 @@
 #include "twc.h"
+#include <string.h>
 
 int get_options(int* argc, char** argv, ip_t* ip) {
     unsigned char num_rec = 0; /* Used to record the two allowed numerical options */
@@ -15,6 +16,7 @@ int get_options(int* argc, char** argv, ip_t* ip) {
             output_help();
             return 1;
         } 
+
         if (!(strcmp("--version", argv[i]))) {
             printf(VERSION_STR);
             return 1;
@@ -403,7 +405,7 @@ int get_standard_method(int* argc, char** argv, ip_t* ip) {
         if(!(strcmp("--standard", argv[i]))) {
             CHECK_RES(sscanf(argv[i + 1], "%s", strval));
             CHECK_RET(check_standard(strval, standard_arr, ssize, &index));
-            ip->standard.str = strval;
+            strcpy(ip->standard.str, strval);
             ip->standard.num = standard_const[index];
             i++;
             continue;
@@ -640,19 +642,20 @@ int sel_functions(ip_t* ip) {
                     fprintf(stderr, "\nMethod %c for the IPC-%d doesn't exist.\n", ip->method, ip->standard.num);
                     return 1;
             }
+            break;
         case IPC2152:
             switch (ip->method) {
                 case 'A':
-                    ip->defv = &set_defv_IPC2152_A;
-                    ip->proc = &calcs_IPC2152_A; 
-                    ip->outu = &set_outu_IPC2152; 
-                    ip->outp = &output_results_IPC2152_A; 
-                    break;
-                case 'B':
                     ip->defv = &set_defv_IPC2152_B;
                     ip->proc = &calcs_IPC2152_B; 
                     ip->outu = &set_outu_IPC2152; 
                     ip->outp = &output_results_IPC2152_B; 
+                    break;
+                case 'B':
+                    ip->defv = &set_defv_IPC2152_A;
+                    ip->proc = &calcs_IPC2152_A; 
+                    ip->outu = &set_outu_IPC2152; 
+                    ip->outp = &output_results_IPC2152_A; 
                     break;
                 default:
                     fprintf(stderr, "\nMethod %c for the IPC-%d doesn't exist.\n", ip->method, ip->standard.num);
@@ -673,22 +676,17 @@ void autogen_file_name(char* fname) {
 }
 
 void set_output_file(ofile_t* ofile, char* optarg) {
-    ofile->fname = calloc(OUT_FILE_MAX , sizeof(char));
-
     /* If given a . use the current directory for the output */
     if (*optarg == '.') {
         autogen_file_name(ofile->fname);
     /* If given a path with no name, autogenerate the name at that path */
     } else if (optarg[strlen(optarg) - 1] == '/') {
-        ofile->path = malloc(sizeof(char) * PATH_MAX); // PATH_MAX = 260
-        strcpy(ofile->path, optarg); 
+        memcpy(ofile->path, optarg, sizeof(&optarg)); 
         autogen_file_name(ofile->fname);
     /* Last case is a file name */ 
     } else {
         strcpy(ofile->fname, optarg); 
     }
-
-    ofile->dest = malloc(sizeof(char) * (strlen(ofile->path) + strlen(ofile->fname)));
     sprintf(ofile->dest, "%s%s", ofile->path, ofile->fname);
 }
 
@@ -878,6 +876,9 @@ int output_results_IPC2221(ip_t* ip, op_t* op, FILE * file) {
     fprintf(file,   
             "\n- Constants and method used were derived from http://circuitcalculator.com/wordpress/2006/03/12/pcb-via-calculator/.\n");
 
+    fprintf(file,   
+            "\n- Used the %s standard, Method %c\n", ip->standard.str, ip->method);
+
     fprintf(file, DISCLAIMER_STR);
 
     return EXIT_SUCCESS;
@@ -929,6 +930,9 @@ int output_results_IPC2152_A(ip_t* ip, op_t *op, FILE *file) {
     fprintf(file,   
             "\n- Constants and method used were derived from https://www.smps.us/pcb-calculator.html.\n");
 
+    fprintf(file,   
+            "\n- Used the %s standard, Method %c\n", ip->standard.str, ip->method);
+
     fprintf(file, DISCLAIMER_STR);
 
     return EXIT_SUCCESS;
@@ -978,6 +982,9 @@ int output_results_IPC2152_B(ip_t* ip, op_t *op, FILE *file) {
 
     fprintf(file,   
             "\n- Constants and method used were derived from https://ninjacalc.mbedded.ninja/calculators/electronics/pcb-design/track-current-ipc2152.\n");
+
+    fprintf(file,   
+            "\n- Used the %s standard, Method %c\n", ip->standard.str, ip->method);
 
     fprintf(file, DISCLAIMER_STR);
 

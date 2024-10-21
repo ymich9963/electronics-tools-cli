@@ -4,15 +4,15 @@
 A calculator tool used to assist designing rigid PCB traces. Implements both the IPC2221 and IPC2152 standards and has the ability to choose between the two, with the latter having two methods available for the outputs. Each method used for the standards was derived from one of the various websites that claim to implement a trace width calculator.
 
 ## Methods
-One method is implemented for IPC2221 and two methods for IPC2152. The tool defaults to the IPC2152 standard, Method B.
+One method is implemented for IPC2221 and two methods for IPC2152. The tool defaults to the IPC2152 standard, Method A.
 
 ### IPC2221
 - Method A: Derived from [The CircuitCalculator.com Blog](https://circuitcalculator.com/wordpress/2006/01/31/pcb-trace-width-calculator/) and [Omni Calculator](https://www.omnicalculator.com/other/pcb-trace-width#how-to-calculate-the-width-of-a-pcb-trace). 
 
 ### IPC2152
-- Method A: Derived from [SMPS.us](https://www.smps.us/pcb-calculator.html) which was also posted on the [Altium Resources](https://resources.altium.com/p/using-ipc-2152-calculator-designing-standards)
+- Method A: Derived from [NinjaCalc](https://ninjacalc.mbedded.ninja/calculators/electronics/pcb-design/track-current-ipc2152).
+- Method B: Derived from [SMPS.us](https://www.smps.us/pcb-calculator.html) which was also posted on the [Altium Resources](https://resources.altium.com/p/using-ipc-2152-calculator-designing-standards)
 
-- Method B: Derived from [NinjaCalc](https://ninjacalc.mbedded.ninja/calculators/electronics/pcb-design/track-current-ipc2152).
 
 ## Installing
 To install and use the `twc` command. Make sure to have the latest version, place it in a folder, and add that folder path to your Enviroment Variables.

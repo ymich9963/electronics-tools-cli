@@ -15,6 +15,8 @@ void test_output_help() {
 
 void test_output_results_IPC2221() {
     ip_t ip = {
+        .standard.str = "IPC2221",
+        .method = 'A',
         .current = {
             .val = 1,
             .units = "test"
@@ -91,6 +93,8 @@ void test_output_results_IPC2221() {
 
 void test_output_results_IPC2152_B() {
     ip_t ip = {
+        .standard.str = "IPC2152",
+        .method = 'B',
         .current = {
             .val = 1,
             .units = "test"
@@ -167,6 +171,8 @@ void test_output_results_IPC2152_B() {
 
 void test_output_results_IPC2152_A() {
     ip_t ip = {
+        .standard.str = "IPC2152",
+        .method = 'A',
         .current = {
             .outval = 1,
             .units = "test"
@@ -460,9 +466,7 @@ void test_set_output_file() {
 
     ofile_t ofile1;
     set_output_file(&ofile1, ".");
-    /* Remove random characters at the start of the string. Should be 27. */
-    /* TEST_ASSERT_EQUAL_INT(27, strlen(ofile1.dest)); */
-    TEST_ASSERT_NOT_NULL(strstr(ofile1.dest, "twc"));
+    TEST_ASSERT_EQUAL_INT(27, strlen(ofile1.dest));
 
     ofile_t ofile2;
     set_output_file(&ofile2, optarg[1]);
@@ -470,9 +474,7 @@ void test_set_output_file() {
 
     ofile_t ofile3;
     set_output_file(&ofile3, optarg[2]);
-    /* Random hex numbers before ofile.dest. */
-    /* TEST_ASSERT_EQUAL_INT(8, strlen(ofile3.dest)); */
-    TEST_ASSERT_NOT_NULL(strstr(ofile3.dest, "file.txt"));
+    TEST_ASSERT_EQUAL_INT(8, strlen(ofile3.dest));
 }
 
 void test_autogen_file_name() {
@@ -491,17 +493,17 @@ void test_sel_functions() {
     ip_t ip;
 
     ip.standard.num = IPC2221;
-    ip.standard.str = "IPC2221";
+    memcpy(ip.standard.str, "IPC2221", 8);
     ip.method = 'A';
     TEST_ASSERT_EQUAL_INT(0, sel_functions(&ip));
 
     ip.standard.num = IPC2152;
-    ip.standard.str = "IPC2152";
+    memcpy(ip.standard.str, "IPC2152", 8);
     ip.method = 'A';
     TEST_ASSERT_EQUAL_INT(0, sel_functions(&ip));
 
     ip.standard.num = IPC2152;
-    ip.standard.str = "IPC2152";
+    memcpy(ip.standard.str, "IPC2152", 8); 
     ip.method = 'B';
     TEST_ASSERT_EQUAL_INT(0, sel_functions(&ip));
 

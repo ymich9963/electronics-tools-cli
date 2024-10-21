@@ -68,7 +68,7 @@ typedef struct Dbl {
 }dbl_t; /* Struct for inputs of type double */
 
 typedef struct Std {
-    char* str;
+    char str[8];
     unsigned int num;
 }std_t; /* Struct for the standards */
 
@@ -78,8 +78,8 @@ typedef struct Layer{
     dbl_t voltage_drop;        // [V]
     dbl_t power_loss;          // [W]
     dbl_t trace_temperature;   // [Celsius]
-    dbl_t cs_area;                // [mils^2]
-    dbl_t corr_cs_area;           // [mils^2]
+    dbl_t cs_area;             // [mils^2]
+    dbl_t corr_cs_area;        // [mils^2]
     dbl_t corr_trace_width;    // [mils]
 }layer_t; /* Outputs Structures */
 
@@ -87,9 +87,9 @@ typedef layer_t extl_t;
 typedef layer_t intl_t;
 
 typedef struct OFile{
-    char* fname;
-    char* path; 
-    char* dest;
+    char fname[OUT_FILE_MAX];
+    char path[PATH_MAX - OUT_FILE_MAX]; 
+    char dest[PATH_MAX];
     bool oflag;                // Output file flag
 }ofile_t; /* Output file strcture */
 

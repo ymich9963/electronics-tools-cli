@@ -12,7 +12,7 @@ int main(int argc, char** argv) {
 
     /* Universal Defaults */
     ip.standard.num = IPC2152;
-    ip.method = 'B';
+    ip.method = 'A';
     ip.uflag = 'i';
     ip.resistivity.val = 1.724e-6;
     ip.a.val = 3.93e-3;
