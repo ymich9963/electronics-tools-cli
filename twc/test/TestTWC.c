@@ -547,7 +547,7 @@ void test_set_outu() {
 
 void test_check_method() {
     char chrval = 'a';
-    char* method_arr = "ab";
+    const char* method_arr = "ab";
     unsigned int size = 2;
 
     TEST_ASSERT_EQUAL_INT(0, check_method(chrval, method_arr, size));
@@ -559,7 +559,7 @@ void test_check_method() {
 void test_check_standard() {
 
     char* strval = "test";
-    char* standard_arr[] = {"hey", "test"};
+    const char* standard_arr[] = {"hey", "test"};
     unsigned int size = 2;
     unsigned char index;
 

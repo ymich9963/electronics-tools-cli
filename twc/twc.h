@@ -240,7 +240,7 @@ int get_standard_method(int* argc, char** argv, ip_t* ip);
  *
  * @return Success or failure. 
  */
-int check_standard(char* strval, char** standard_arr, unsigned int size, unsigned char* index);
+int check_standard(char* strval, const char** standard_arr, const unsigned int size, unsigned char* index);
 
 /**
  * @brief Used to check the inputted method agains an array containing the existing method codes/characters. No need to use the index since it's just characters.
@@ -251,7 +251,7 @@ int check_standard(char* strval, char** standard_arr, unsigned int size, unsigne
  *
  * @return Success or failure. 
  */
-int check_method(char chrval, char* method_arr, unsigned int size);
+int check_method(char chrval, const char* method_arr, unsigned int size);
 
 /**
  * @brief Set the default, process, output unit, and output print set functions based on the standard and the method chosen.
@@ -338,7 +338,7 @@ double calc_power_loss(ip_t* ip, double* vdrop);
 int output_results_IPC2221(ip_t* ip, op_t* op, FILE * file);
 
 /**
- * @brief Outputted results when using the IPC2512, Method A.
+ * @brief Outputted results when using the IPC2152, Method A.
  *
  * @param ip Input struct to store the inputs.
  * @param op Output struct to store the outputs.
@@ -347,7 +347,7 @@ int output_results_IPC2221(ip_t* ip, op_t* op, FILE * file);
 int output_results_IPC2152_A(ip_t* ip, op_t* op, FILE * file);
 
 /**
- * @brief Outputted results when using the IPC2512, Method B.
+ * @brief Outputted results when using the IPC2152, Method B.
  *
  * @param ip Input struct to store the inputs.
  * @param op Output struct to store the outputs.

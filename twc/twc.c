@@ -1,7 +1,6 @@
 #include "twc.h"
-#include <string.h>
 
-int get_options(int* argc, char** argv, ip_t* ip) {
+int get_options(int* restrict argc, char** restrict argv, ip_t* restrict ip) {
     unsigned char num_rec = 0; /* Used to record the two allowed numerical options */
     double val; /* Temporary value to store the argument */
 
@@ -216,6 +215,7 @@ int get_options(int* argc, char** argv, ip_t* ip) {
         if(!(strcmp("--resistivity", argv[i]))) {
             CHECK_RES(sscanf(argv[i + 1], "%lf", &val));
             CHECK_LIMITS(val);
+            ip->resistivity.outval = val;
             ip->resistivity.val = val;
             i++;
             continue;
@@ -223,6 +223,7 @@ int get_options(int* argc, char** argv, ip_t* ip) {
         if(!(strcmp("--temperature-coefficient", argv[i]))) {
             CHECK_RES(sscanf(argv[i + 1], "%lf", &val));
             CHECK_LIMITS(val);
+            ip->a.outval = val;
             ip->a.val = val;
             i++;
             continue;
@@ -388,15 +389,15 @@ int get_options(int* argc, char** argv, ip_t* ip) {
     return 0;
 }
 
-int get_standard_method(int* argc, char** argv, ip_t* ip) {
-    char* standard_arr[] = {"IPC2221", "IPC2152", "afko"}; /* Standard names array */
-    int standard_const[] = {2221, 2152, 666}; /* Number representation of the standards */
-    char method_arr[] = {'A', 'B'}; /* Method array */
-    char strval[10] = "\0"; /* Temp value for the string argument */
+int get_standard_method(int* restrict argc, char** restrict argv, ip_t* restrict ip) {
+    const char* standard_arr[] = {"IPC2221", "IPC2152", "afko"}; /* Standard names array */
+    const int standard_const[] = {IPC2221, IPC2152, 666}; /* Number representation of the standards */
+    const char method_arr[] = {'A', 'B'}; /* Method array */
+    char strval[10] = {"\0"}; /* Temp value for the string argument */
 
     /* Get the sizes of the arrays */
-    unsigned char ssize = sizeof(standard_arr) / sizeof(standard_arr[0]);
-    unsigned char msize = sizeof(method_arr) / sizeof(method_arr[0]);
+    const unsigned char ssize = sizeof(standard_arr) / sizeof(standard_arr[0]);
+    const unsigned char msize = sizeof(method_arr) / sizeof(method_arr[0]);
 
     /* Index where the input was matched to the available standards */
     unsigned char index;
@@ -409,10 +410,12 @@ int get_standard_method(int* argc, char** argv, ip_t* ip) {
             ip->standard.num = standard_const[index];
             i++;
             continue;
+        } else {
+            strcpy(ip->standard.str, standard_arr[1]);
         }
-        if(!(strcmp("--method", argv[i]))) {
+        if (!(strcmp("--method", argv[i]))) {
             CHECK_RES(sscanf(argv[i + 1], "%s", strval));
-            CHECK_RET(check_method(strval[0], method_arr, msize));
+            CHECK_RET(check_method(strval[0],  method_arr, msize));
             ip->method = strval[0];
             i++;
             continue;
@@ -421,7 +424,7 @@ int get_standard_method(int* argc, char** argv, ip_t* ip) {
     return 0;
 }
 
-int check_standard(char* strval, char** standard_arr, unsigned int size, unsigned char* index) {
+int check_standard(char* restrict strval, const char** standard_arr, unsigned int size, unsigned char* restrict index) {
     bool okflag = false;
     for(int i = 0; i < size; i++) {
         if(!(strcmp(strval, standard_arr[i]))) {
@@ -440,7 +443,7 @@ int check_standard(char* strval, char** standard_arr, unsigned int size, unsigne
     return 0;
 }
 
-int check_method(char chrval, char* method_arr, unsigned int size){
+int check_method(char chrval, const char* restrict method_arr, unsigned int size){
     bool okflag = false;
     for(int i = 0; i < size; i++) {
         if(chrval == method_arr[i]) {
@@ -457,7 +460,7 @@ int check_method(char chrval, char* method_arr, unsigned int size){
     return 0;
 }
 
-int set_outu_IPC2221(ip_t* ip, op_t* op) {
+int set_outu_IPC2221(ip_t* restrict ip, op_t* restrict op) {
     switch (ip->uflag) {
         case 'm':
             op->extl.cs_area.units = "mm^2";
@@ -483,7 +486,7 @@ int set_outu_IPC2221(ip_t* ip, op_t* op) {
     return 0;
 }
 
-int set_outu_IPC2152(ip_t* ip, op_t* op) {
+int set_outu_IPC2152(ip_t* restrict ip, op_t* restrict op) {
     switch (ip->uflag) {
         case 'm':
             op->layer.cs_area.units = "mm^2";
@@ -508,7 +511,7 @@ int set_outu_IPC2152(ip_t* ip, op_t* op) {
     return 0;
 }
 
-void set_defv_IPC2221(ip_t* ip) {
+void set_defv_IPC2221(ip_t* restrict ip) {
     ip->current.outval = 0;      
     ip->current.val = 0;      
     ip->current.units = "A";      
@@ -538,7 +541,7 @@ void set_defv_IPC2221(ip_t* ip) {
     ip->a.units = "1/C";
 }
 
-void set_defv_IPC2152_A(ip_t* ip) {
+void set_defv_IPC2152_A(ip_t* restrict ip) {
     ip->current.outval = 0;      
     ip->current.val = 0;      
     ip->current.units = "A";      
@@ -583,7 +586,7 @@ void set_defv_IPC2152_A(ip_t* ip) {
     ip->cf.plane_distance = 1;
 }
 
-void set_defv_IPC2152_B(ip_t* ip) {
+void set_defv_IPC2152_B(ip_t* restrict ip) {
     /* Set input value defaults */
     ip->current.outval = 0;      
     ip->current.val = 0;      
@@ -628,7 +631,7 @@ void set_defv_IPC2152_B(ip_t* ip) {
     ip->cf.pcb_thermal_cond = 1;
 }
 
-int sel_functions(ip_t* ip) {
+int sel_functions(ip_t* restrict ip) {
     switch (ip->standard.num) {
         case IPC2221:
             switch (ip->method) {
@@ -669,13 +672,13 @@ int sel_functions(ip_t* ip) {
     return 0;
 }
 
-void autogen_file_name(char* fname) {
+void autogen_file_name(char* restrict fname) {
     strcpy(fname, "twc-output-"); 
     strcat(fname, get_time()); 
     strcat(fname, ".txt");
 }
 
-void set_output_file(ofile_t* ofile, char* optarg) {
+void set_output_file(ofile_t* restrict ofile, char* restrict optarg) {
     /* If given a . use the current directory for the output */
     if (*optarg == '.') {
         autogen_file_name(ofile->fname);
@@ -690,14 +693,14 @@ void set_output_file(ofile_t* ofile, char* optarg) {
     sprintf(ofile->dest, "%s%s", ofile->path, ofile->fname);
 }
 
-void calcs_IPC2221(ip_t* ip, op_t* op) {
+void calcs_IPC2221(ip_t* restrict ip, op_t* restrict op) {
     op->extl.cs_area.val = pow(ip->current.val/(k_EXT * pow(ip->temperature_rise.val, 0.44)), 1/0.725); 
     calc_w_r_vd_pl(ip, &op->extl);
     op->intl.cs_area.val = pow(ip->current.val/(k_INT * pow(ip->temperature_rise.val, 0.44)), 1/0.725); 
     calc_w_r_vd_pl(ip, &op->intl);
 }
 
-void calcs_IPC2152_A(ip_t* ip, op_t* op) {
+void calcs_IPC2152_A(ip_t* restrict ip, op_t* restrict op) {
     /* Different one on the website, and different one in the website code */
     op->layer.cs_area.val = (110.515 * pow(ip->temperature_rise.val, -0.871) + 0.803) * pow(ip->current.val, 0.868 * pow(ip->temperature_rise.val, -0.102) + 1.129);    
     /* op->layer.cs_area = (117.555 * pow(ip->temperature_rise.val, -0.913) + 1.15) * pow(ip->current.val, 0.84 * pow(ip->temperature_rise.val, -0.018) + 1.159);  */
@@ -746,7 +749,7 @@ void calcs_IPC2152_A(ip_t* ip, op_t* op) {
     op->layer.trace_width.val = 0.7692 * calc_trace_width_mils(ip, &op->layer.cs_area.val) * 1.378; // overwrites the result from calc_w_r_vd_pl()
 }
 
-void calcs_IPC2152_B(ip_t* ip, op_t* op) {
+void calcs_IPC2152_B(ip_t* restrict ip, op_t* restrict op) {
     op->layer.cs_area.val = pow(ip->current.val/(0.089710902134 * pow(ip->temperature_rise.val, 0.39379253898)), 1/(0.50382053698 * pow(ip->temperature_rise.val, 0.038495772461)));
 
     /* Coefficients array */
@@ -786,7 +789,7 @@ void calcs_IPC2152_B(ip_t* ip, op_t* op) {
     calc_w_r_vd_pl(ip, &op->layer);
 }
 
-void calc_w_r_vd_pl(ip_t* ip, layer_t* layer) {
+void calc_w_r_vd_pl(ip_t* restrict ip, layer_t* restrict layer) {
     layer->trace_width.val = calc_trace_width_mils(ip, &layer->cs_area.val);
     if (ip->trace_length.val > 0) {
         layer->resistance.val  = calc_resistance(ip, &layer->cs_area.val); 
@@ -795,15 +798,15 @@ void calc_w_r_vd_pl(ip_t* ip, layer_t* layer) {
     layer->power_loss.val = calc_power_loss(ip, &layer->voltage_drop.val);
 }
 
-double calc_trace_width_mils(ip_t* ip, double* cs_area) {
+double calc_trace_width_mils(ip_t* restrict ip, double* restrict cs_area) {
     return *cs_area/CONV_OZFT2_TO_MIL(ip->copper_weight.val);
 }
 
-double calc_resistance(ip_t* ip, double* cs_area) {
+double calc_resistance(ip_t* restrict ip, double* restrict cs_area) {
     return ((ip->trace_length.val * ip->resistivity.val)/(CONV_MIL2_TO_CM2(*cs_area))) * (1 + (ip->a.val * ((ip->temperature_rise.val + ip->temperature_ambient.val) - ip->temperature_ambient.val)));
 }
 
-double calc_vdrop(ip_t* ip, double* resistance) {
+double calc_vdrop(ip_t* restrict ip, double* restrict resistance) {
     return ip->current.val * (*resistance); 
 }
 
@@ -819,7 +822,7 @@ char* get_time() {
     return s;
 }
 
-int output_results_IPC2221(ip_t* ip, op_t* op, FILE * file) {
+int output_results_IPC2221(ip_t* restrict ip, op_t* restrict op, FILE * file) {
     fprintf(file,   
             "\n"
             "Current:\t\t%lf\t[%s]\n"
@@ -869,9 +872,9 @@ int output_results_IPC2221(ip_t* ip, op_t* op, FILE * file) {
     fprintf(file, ip->trace_length.val == 0 ? 
             "\n- Use trace length with '-l' to get voltage, resistance and power calculations.\n" : 
             "\n- Constants used for the P/I/V calculations were,\n\n"
-            "\ta = %.7lf (Temperature Coefficient)\n"
-            "%6srho = %.7lf (Resistivity)\n",
-            ip->a.val, " " ,ip->resistivity.val); 
+            "\ta = %.7lf\t[%s] (Temperature Coefficient)\n"
+            "%srho = %.12lf\t[%s] (Resistivity)\n",
+            ip->a.outval, ip->a.units, " " ,ip->resistivity.outval, ip->resistivity.units); 
 
     fprintf(file,   
             "\n- Constants and method used were derived from http://circuitcalculator.com/wordpress/2006/03/12/pcb-via-calculator/.\n");
@@ -884,7 +887,7 @@ int output_results_IPC2221(ip_t* ip, op_t* op, FILE * file) {
     return EXIT_SUCCESS;
 }
 
-int output_results_IPC2152_A(ip_t* ip, op_t *op, FILE *file) {
+int output_results_IPC2152_A(ip_t* restrict ip, op_t* restrict op, FILE *file) {
     fprintf(file,
             "\n"
             "Current:\t\t%lf\t[%s]\n"
@@ -923,9 +926,9 @@ int output_results_IPC2152_A(ip_t* ip, op_t *op, FILE *file) {
     fprintf(file, ip->trace_length.val == 0 ? 
             "\n- Use trace length with '-l' to get voltage, resistance and power calculations.\n" : 
             "\n- Constants used for the P/I/V calculations were,\n\n"
-            "\ta = %.7lf (Temperature Coefficient)\n"
-            "%6srho = %.7lf (Resistivity)\n",
-            ip->a.val, " " ,ip->resistivity.val); 
+            "\ta = %.7lf\t[%s] (Temperature Coefficient)\n"
+            "%srho = %.12lf\t[%s] (Resistivity)\n",
+            ip->a.outval, ip->a.units, " " ,ip->resistivity.outval, ip->resistivity.units); 
 
     fprintf(file,   
             "\n- Constants and method used were derived from https://www.smps.us/pcb-calculator.html.\n");
@@ -938,7 +941,7 @@ int output_results_IPC2152_A(ip_t* ip, op_t *op, FILE *file) {
     return EXIT_SUCCESS;
 }
 
-int output_results_IPC2152_B(ip_t* ip, op_t *op, FILE *file) {
+int output_results_IPC2152_B(ip_t* restrict ip, op_t* restrict op, FILE *file) {
     fprintf(file,
             "\n"
             "Current:\t\t%lf\t[%s]\n"
@@ -976,9 +979,9 @@ int output_results_IPC2152_B(ip_t* ip, op_t *op, FILE *file) {
     fprintf(file, ip->trace_length.val == 0 ? 
             "\n- Use trace length with '-l' to get voltage, resistance and power calculations.\n" : 
             "\n- Constants used for the P/I/V calculations were,\n\n"
-            "\ta = %.7lf (Temperature Coefficient)\n"
-            "%6srho = %.7lf (Resistivity)\n",
-            ip->a.val, " " ,ip->resistivity.val); 
+            "\ta = %.7lf\t[%s] (Temperature Coefficient)\n"
+            "%srho = %.12lf\t[%s] (Resistivity)\n",
+            ip->a.outval, ip->a.units, " " ,ip->resistivity.outval, ip->resistivity.units); 
 
     fprintf(file,   
             "\n- Constants and method used were derived from https://ninjacalc.mbedded.ninja/calculators/electronics/pcb-design/track-current-ipc2152.\n");

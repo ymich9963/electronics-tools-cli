@@ -1,7 +1,7 @@
 OBJECTS := twc.o main.o
 BUILD_DIR := ./build
 TARGET := twc
-CFLAGS := -Wall 
+CFLAGS := -Wall -O3
 CC := clang
 
 ifndef VERBOSE
