@@ -52,9 +52,6 @@ int main(int argc, char** argv) {
     if (file != stdout) {
         fclose(file);
         printf("\nContents exported to %s\n\n", ip.ofile.dest);
-        free(ip.ofile.path);
-        free(ip.ofile.fname);
-        free(ip.ofile.dest);
     }
 
     /* Program done. exit succesfully */

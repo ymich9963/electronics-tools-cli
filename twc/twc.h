@@ -13,7 +13,9 @@
 #define k_EXT           0.048
 #define VAL_MAX         999999999.999999999 
 #define VAL_MIN         DBL_MIN
-#define OUT_FILE_MAX    30
+#define OUT_FILE_LEN    30
+#define DEST_LEN        PATH_MAX
+#define PATH_LEN        DEST_LEN - OUT_FILE_LEN
 #define WELCOME_STR     "\nTrace Width Calculator, Made by Yiannis Michael (2024). \n\nPlease 'type twc.exe <Current [A]> <Copper Weight [oz/ft^2]>' to get output results. Use '--help' for explanation of the flags and more advanced usage, for different units, optional inputs, etc.\n\nThis tool should only be used to assist design decisions and not be used to replace professional advice. Developer(s) have no liability whatsoever.\n"
 #define FEW_ARGS_STR    "\nAn input of at least Current [A] and Copper Weight [oz/ft^2] is required. Use no arguments to get the welcome message and either '-h' or '--help' to get the list of commands.\n"
 #define VERSION_STR     "\nTrace Width Calculator (TWC)\n Version 1.0.0\n"
@@ -87,9 +89,9 @@ typedef layer_t extl_t;
 typedef layer_t intl_t;
 
 typedef struct OFile{
-    char fname[OUT_FILE_MAX];
-    char path[PATH_MAX - OUT_FILE_MAX]; 
-    char dest[PATH_MAX];
+    char fname[OUT_FILE_LEN];
+    char path[PATH_LEN - OUT_FILE_LEN]; 
+    char dest[PATH_LEN];
     bool oflag;                // Output file flag
 }ofile_t; /* Output file strcture */
 
