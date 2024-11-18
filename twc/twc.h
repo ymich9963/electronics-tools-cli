@@ -9,17 +9,17 @@
 #include <time.h>
 
 /* Constants */
-#define k_INT           0.024
-#define k_EXT           0.048
-#define VAL_MAX         999999999.999999999 
-#define VAL_MIN         DBL_MIN
+#define k_INT           0.024f
+#define k_EXT           0.048f
+#define VAL_MAX         999999999.999999999f
+#define VAL_MIN         0.0f
 #define STD_NAME_LEN    8
 #define OUT_FILE_LEN    30
-#define DEST_LEN        PATH_MAX
+#define DEST_LEN        100
 #define PATH_LEN        DEST_LEN - OUT_FILE_LEN
 #define WELCOME_STR     "\nTrace Width Calculator, Made by Yiannis Michael (2024). \n\nPlease 'type twc.exe <Current [A]> <Copper Weight [oz/ft^2]>' to get output results. Use '--help' for explanation of the flags and more advanced usage, for different units, optional inputs, etc.\n\nThis tool should only be used to assist design decisions and not be used to replace professional advice. Developer(s) have no liability whatsoever.\n"
 #define FEW_ARGS_STR    "\nAn input of at least Current [A] and Copper Weight [oz/ft^2] is required. Use no arguments to get the welcome message and either '-h' or '--help' to get the list of commands.\n"
-#define VERSION_STR     "\nTrace Width Calculator (TWC)\n Version 1.0.0\n"
+#define VERSION_STR     "\nTrace Width Calculator (TWC)\n Version 1.0.5\n"
 #define DISCLAIMER_STR  "\nDesign assistance by the TWC tool is provided with no liability whatsover. For final decisions on electronics designs, please consult an actual qualified person.\n"
 
 /* Conversion macros */

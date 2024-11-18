@@ -40,7 +40,7 @@ int main(int argc, char** argv) {
     if(ip.ofile.oflag) {
         file = fopen(ip.ofile.dest, "w");
         if (!(file)) {
-            fprintf(stderr, "File not able to be saved, check input.\n");
+            fprintf(stderr, "\nFile not able to be saved, check input. Directory may not exist.\n\n");
             exit(EXIT_FAILURE);
         }
     }

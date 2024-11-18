@@ -1,4 +1,5 @@
 #include "twc.h"
+#include <stdio.h>
 
 int get_options(int* restrict argc, char** restrict argv, ip_t* restrict ip) {
     unsigned char num_rec = 0; /* Used to record the two allowed numerical options */
@@ -679,16 +680,23 @@ void autogen_file_name(char* restrict fname) {
 }
 
 void set_output_file(ofile_t* restrict ofile, char* restrict optarg) {
+    // TODO: Make the path, destination, and file name sizes, dynamically change.
+    // TODO: Make a case for using './' in the optarg
+    // TODO: Generally make this better
+
+    const size_t len = strlen(optarg);
+
     /* If given a . use the current directory for the output */
-    if (*optarg == '.') {
+    if (optarg[0] == '.' && len <= 2) {
         autogen_file_name(ofile->fname);
     /* If given a path with no name, autogenerate the name at that path */
-    } else if (optarg[strlen(optarg) - 1] == '/') {
-        memcpy(ofile->path, optarg, sizeof(optarg)); 
+    } else if (optarg[len - 1] == '/') {
+        strcpy(ofile->path, optarg); 
         autogen_file_name(ofile->fname);
     /* Last case is a file name */ 
     } else {
         strcpy(ofile->fname, optarg); 
+        strcpy(ofile->path, "\0"); 
     }
     sprintf(ofile->dest, "%s%s", ofile->path, ofile->fname);
 }
