@@ -1,5 +1,0 @@
-Encountered compiler invocation for first time, configuring it: c:/msys64/mingw64/bin/gcc
-[STATUS] Using comptype gcc
-Added template compiler configuration instance E:/git/electronics-tools-cli/twc/cov-int/emit/YIANNISMICHAEL/config/3bd8fdb6939f874d8905e1a0401f9d3c/coverity_config.xml
-Using cached template compiler configuration instance E:/git/electronics-tools-cli/twc/cov-int/emit/YIANNISMICHAEL/config/3bd8fdb6939f874d8905e1a0401f9d3c/coverity_config.xml
-Using cached template compiler configuration instance E:/git/electronics-tools-cli/twc/cov-int/emit/YIANNISMICHAEL/config/3bd8fdb6939f874d8905e1a0401f9d3c/coverity_config.xml
