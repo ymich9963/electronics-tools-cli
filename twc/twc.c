@@ -406,12 +406,12 @@ int get_standard_method(int* restrict argc, char** restrict argv, ip_t* restrict
         if(!(strcmp("--standard", argv[i]))) {
             CHECK_RES(sscanf(argv[i + 1], "%s", strval));
             CHECK_RET(check_standard(strval, standard_arr, ssize, &index));
-            strcpy(ip->standard.str, strval);
+            memcpy(ip->standard.str, strval, STD_NAME_LEN * sizeof(char)); 
             ip->standard.num = standard_const[index];
             i++;
             continue;
         } else {
-            strcpy(ip->standard.str, standard_arr[1]);
+            memcpy(ip->standard.str, standard_arr[1], STD_NAME_LEN * sizeof(char)); 
         }
         if (!(strcmp("--method", argv[i]))) {
             CHECK_RES(sscanf(argv[i + 1], "%s", strval));
@@ -684,7 +684,7 @@ void set_output_file(ofile_t* restrict ofile, char* restrict optarg) {
         autogen_file_name(ofile->fname);
     /* If given a path with no name, autogenerate the name at that path */
     } else if (optarg[strlen(optarg) - 1] == '/') {
-        memcpy(ofile->path, optarg, sizeof(&optarg)); 
+        memcpy(ofile->path, optarg, sizeof(optarg)); 
         autogen_file_name(ofile->fname);
     /* Last case is a file name */ 
     } else {

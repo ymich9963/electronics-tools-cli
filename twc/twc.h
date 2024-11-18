@@ -13,6 +13,7 @@
 #define k_EXT           0.048
 #define VAL_MAX         999999999.999999999 
 #define VAL_MIN         DBL_MIN
+#define STD_NAME_LEN    8
 #define OUT_FILE_LEN    30
 #define DEST_LEN        PATH_MAX
 #define PATH_LEN        DEST_LEN - OUT_FILE_LEN
@@ -70,7 +71,7 @@ typedef struct Dbl {
 }dbl_t; /* Struct for inputs of type double */
 
 typedef struct Std {
-    char str[8];
+    char str[STD_NAME_LEN];
     unsigned int num;
 }std_t; /* Struct for the standards */
 

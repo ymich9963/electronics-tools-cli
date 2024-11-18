@@ -1,0 +1,9 @@
+# Version: 78329b8295 p-2023.12-push-50
+# Command Line: E:/cov-analysis-win64-2023.12.2/bin/cov-security-da.exe --dir E:/git/electronics-tools-cli/twc/cov-int
+timer                         ms      calls
+-------------------------------------------
+cov_security_da::run           0          1
+
+activity                      ms      calls
+-------------------------------------------
+cov_security_da::run           0          1
