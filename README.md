@@ -5,7 +5,7 @@
        src="https://scan.coverity.com/projects/31007/badge.svg"/>
 </a>
 
-A calculator tool used to assist designing rigid PCB traces. Implements both the IPC2221 and IPC2152 standards and has the ability to choose between the two, with the latter having two methods available for the outputs. Each method used for the standards was derived from one of the various websites that claim to implement a trace width calculator.
+A calculator tool used to assist designing rigid PCB traces. Implements both the IPC2221 and IPC2152 standards and has the ability to choose between the two, with the latter having two methods available for the outputs. Each method used for the standards was derived from one of the various websites that claim to implement a trace width calculator. The initial purpose of this tool was to collect the available methods for calculating trace widths and to have them all in one place. Any improvements please let me know!
 
 ## Methods
 One method is implemented for IPC2221 and two methods for IPC2152. The tool defaults to the IPC2152 standard, Method A.
@@ -15,7 +15,7 @@ One method is implemented for IPC2221 and two methods for IPC2152. The tool defa
 
 ### IPC2152
 - Method A: Derived from [NinjaCalc](https://ninjacalc.mbedded.ninja/calculators/electronics/pcb-design/track-current-ipc2152).
-- Method B: Derived from [SMPS.us](https://www.smps.us/pcb-calculator.html) which was also posted on the [Altium Resources](https://resources.altium.com/p/using-ipc-2152-calculator-designing-standards)
+- Method B: Derived from [SMPS.us](https://www.smps.us/pcb-calculator.html) which was also posted on the [Altium Resources](https://resources.altium.com/p/using-ipc-2152-calculator-designing-standards).
 
 
 ## Installing
